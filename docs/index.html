@@ -10,8 +10,8 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script type="module" crossorigin src="/1zero/assets/index-wd2dq7Zq.js"></script>
-    <link rel="stylesheet" crossorigin href="/1zero/assets/index-UBaV_v2g.css">
+    <script type="module" crossorigin src="/1zero/assets/index-CwD86UBP.js"></script>
+    <link rel="stylesheet" crossorigin href="/1zero/assets/index-JtTiPOY-.css">
   <link rel="manifest" href="/1zero/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/1zero/registerSW.js"></script></head>
   <body>
     <!-- Adaptive App Shell (Combines Desktop Sidebar and Mobile layouts) -->
@@ -1080,6 +1080,32 @@
 
         <div class="modal-actions">
           <button id="btn-allocation-close" class="btn-modal-submit" style="width: 100%;">Got it</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sell Position Modal -->
+    <div class="modal-overlay" id="sell-modal">
+      <div class="modal-box" style="max-width: 320px;">
+        <div class="modal-title" style="color: var(--coral);">
+          <i data-lucide="minus-circle"></i>
+          <span>Sell <span id="sell-ticker-label">—</span></span>
+        </div>
+        <p class="modal-desc">
+          You hold <strong id="sell-shares-max">0</strong> shares · Price <strong id="sell-price-label">₪0</strong>
+        </p>
+        <div class="form-group">
+          <label class="form-label">Shares to Sell</label>
+          <input type="number" id="sell-shares-input" class="form-input" placeholder="e.g. 5" min="0.001" step="any" />
+        </div>
+        <button id="btn-sell-all" class="btn-modal-cancel" style="width:100%; margin-bottom:0.5rem; text-align:center;">
+          Sell All (Close Position)
+        </button>
+        <div class="modal-actions">
+          <button id="btn-sell-close" class="btn-modal-cancel">Cancel</button>
+          <button id="btn-sell-confirm" class="btn-modal-submit" style="background: var(--coral); border-color: var(--coral);">
+            Confirm Sell
+          </button>
         </div>
       </div>
     </div>

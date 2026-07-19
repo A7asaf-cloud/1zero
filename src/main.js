@@ -247,15 +247,111 @@ function renderStocksList() {
     return;
   }
 
-  state.stocksHoldings.forEach(h => {
+  state.stocksHoldings.forEach((h, idx) => {
     const row = document.createElement('div');
     row.className = 'stock-holding-row';
     row.innerHTML = `
       <span class="stock-ticker-name">${h.ticker}</span>
       <span>${h.shares.toLocaleString()} shares</span>
       <span class="stock-value-align">${formatCurrency(h.shares * h.price)}</span>
+      <button class="btn-sell-stock" data-idx="${idx}" title="Sell position">
+        <i data-lucide="minus-circle"></i>
+      </button>
     `;
+    row.querySelector('.btn-sell-stock').addEventListener('click', () => openSellModal(idx));
     container.appendChild(row);
+  });
+
+  lucide.createIcons();
+}
+
+function openSellModal(idx) {
+  const h = state.stocksHoldings[idx];
+  if (!h) return;
+
+  document.getElementById('sell-ticker-label').textContent = h.ticker;
+  document.getElementById('sell-shares-max').textContent   = h.shares.toLocaleString();
+  document.getElementById('sell-price-label').textContent  = formatCurrency(h.price);
+  document.getElementById('sell-shares-input').value       = '';
+  document.getElementById('sell-shares-input').max         = h.shares;
+  document.getElementById('sell-modal').dataset.idx        = idx;
+  document.getElementById('sell-modal').classList.add('active');
+  setTimeout(() => document.getElementById('sell-shares-input').focus(), 100);
+}
+
+function setupSellModal() {
+  const modal      = document.getElementById('sell-modal');
+  const btnClose   = document.getElementById('btn-sell-close');
+  const btnSellAll = document.getElementById('btn-sell-all');
+  const btnConfirm = document.getElementById('btn-sell-confirm');
+  const sharesInput = document.getElementById('sell-shares-input');
+
+  btnClose.addEventListener('click', () => modal.classList.remove('active'));
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); });
+
+  btnSellAll.addEventListener('click', () => {
+    const idx = parseInt(modal.dataset.idx);
+    const h   = state.stocksHoldings[idx];
+    if (h) sharesInput.value = h.shares;
+  });
+
+  btnConfirm.addEventListener('click', () => {
+    const idx        = parseInt(modal.dataset.idx);
+    const h          = state.stocksHoldings[idx];
+    const sellShares = parseFloat(sharesInput.value);
+
+    if (!h || isNaN(sellShares) || sellShares <= 0) {
+      showToast('Enter a valid number of shares.', 'error'); return;
+    }
+    if (sellShares > h.shares) {
+      showToast(`You only hold ${h.shares} shares of ${h.ticker}.`, 'error'); return;
+    }
+
+    const proceeds = sellShares * h.price;
+
+    if (sellShares >= h.shares) {
+      // Close full position
+      state.stocksHoldings.splice(idx, 1);
+    } else {
+      // Partial sell
+      h.shares -= sellShares;
+    }
+
+    // Proceeds go to liquid cash
+    state.balances.liquid += proceeds;
+
+    // Log as income transaction
+    state.transactions.unshift({
+      date:        new Date().toISOString().slice(0, 10),
+      description: `Sold ${sellShares} × ${h?.ticker || 'Stock'}`,
+      category:    'Investment',
+      source:      'Brokerage',
+      amount:      proceeds,
+      type:        'INCOME'
+    });
+
+    // Recalculate allocation
+    const totalStockVal = calculateStocksBalance();
+    state.stockAllocation = state.stocksHoldings.map(s =>
+      Math.round((s.shares * s.price) / totalStockVal * 100)
+    );
+
+    updateUIBalances(true);
+    renderStocksList();
+    applyFilters();
+
+    if (donutChart) {
+      const has = state.stocksHoldings.length > 0;
+      donutChart.updateSeries(has ? state.stockAllocation : [100]);
+      donutChart.updateOptions({
+        labels: has ? state.stocksHoldings.map(s => s.ticker) : ['No Assets'],
+        colors: has ? ['#06b6d4','#8b5cf6','#10b981','#f43f5e','#a855f7'] : ['#22252d']
+      });
+    }
+
+    modal.classList.remove('active');
+    terminalWrite(`sell.execute(): ${sellShares} × ${h?.ticker || 'stock'} → +₪${proceeds.toLocaleString()} cash`, 'success');
+    showToast(`Sold ${sellShares} shares for ${formatCurrency(proceeds)}. Cash updated.`);
   });
 }
 
@@ -1768,6 +1864,7 @@ function initApp() {
   setupLedgerFilters();
   setupProjectionsSlider();
 
+  setupSellModal();
   setupQuickBankEntry();
   setupAllocationModal();
   setupOnboardingFlow();

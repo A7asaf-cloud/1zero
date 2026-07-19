@@ -2558,3 +2558,25 @@ body {
   max-height: 90vh !important;
   overflow-y: auto !important;
 }
+
+/* ── Sell Stock Button ───────────────────────────────────────────────────────── */
+.stock-holding-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1.5fr auto;
+  padding: 0.55rem 0.65rem;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  align-items: center;
+  gap: 0.5rem;
+}
+.btn-sell-stock {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--coral);
+  display: flex; align-items: center; justify-content: center;
+  padding: 0.2rem;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.btn-sell-stock:hover { background: var(--coral-alpha); }
+.btn-sell-stock i, .btn-sell-stock svg { width: 16px; height: 16px; }
