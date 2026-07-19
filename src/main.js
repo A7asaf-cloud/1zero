@@ -827,45 +827,89 @@ function setupUploaderLogic() {
   function processStatement(file) {
     stmtScanner.classList.add('active');
     stmtResult.style.display = 'none';
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 5;
-      stmtProgress.style.width = `${progress}%`;
-      
-      if (progress < 30) {
-        stmtStatus.innerHTML = `Reading statement CSV: <strong>${file.name}</strong>...`;
-      } else if (progress < 60) {
-        stmtStatus.innerHTML = `Parsing transaction columns...`;
-      } else if (progress < 90) {
-        stmtStatus.innerHTML = `Running duplicates analysis...`;
-      } else if (progress >= 100) {
-        clearInterval(interval);
-        completeStatementExtraction();
-      }
-    }, 80);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      let progress = 0;
+      stmtStatus.innerHTML = `Reading: <strong>${file.name}</strong>`;
+      const interval = setInterval(() => {
+        progress += 8;
+        stmtProgress.style.width = `${Math.min(progress, 90)}%`;
+        if (progress === 32) stmtStatus.innerHTML = `Normalizing column headers...`;
+        if (progress === 64) stmtStatus.innerHTML = `Parsing transaction rows...`;
+        if (progress >= 90) {
+          clearInterval(interval);
+          stmtProgress.style.width = '100%';
+          setTimeout(() => completeStatementExtraction(e.target.result), 200);
+        }
+      }, 60);
+    };
+    reader.onerror = () => {
+      stmtScanner.classList.remove('active');
+      showToast('Failed to read file.', 'error');
+    };
+    reader.readAsText(file, 'utf-8');
   }
 
-  function completeStatementExtraction() {
+  function completeStatementExtraction(csvText) {
     stmtScanner.classList.remove('active');
     stmtProgress.style.width = '0%';
-    
-    const records = [
-      { date: '2026-07-16', description: 'Wolt Refund Credit', category: 'Food & Dining', source: 'Bank Statement', amount: 120, type: 'INCOME' },
-      { date: '2026-07-15', description: 'Shufersal Supermarket', category: 'Food & Dining', source: 'Bank Statement', amount: 450, type: 'EXPENSE' },
-      { date: '2026-07-15', description: 'Delek Fuel Station', category: 'Utilities', source: 'Bank Statement', amount: 180, type: 'EXPENSE' }
-    ];
 
-    records.forEach(r => state.transactions.unshift(r));
-    
-    state.balances.liquid += (120 - 450);
-    state.creditOutstanding += 180;
+    let rows;
+    if (csvText) {
+      rows = parseBankCSV(csvText);
+    } else {
+      // Demo fallback if no real file was provided
+      rows = [
+        { date: new Date().toISOString().slice(0,10), description: 'Wolt Refund', amount: 120 },
+        { date: new Date().toISOString().slice(0,10), description: 'Shufersal', amount: -450 },
+        { date: new Date().toISOString().slice(0,10), description: 'Delek Fuel', amount: -180 }
+      ];
+    }
+
+    if (rows.length === 0) {
+      showToast('No valid rows found in file. Check column format.', 'error');
+      return;
+    }
+
+    const { totalIncome, totalExpenses, net } = applyCSVRows(rows);
+
+    // Update summary card
+    document.getElementById('extracted-stmt-details').textContent = `${rows.length} rows`;
+    document.getElementById('csv-total-income').textContent = formatCurrency(totalIncome);
+    document.getElementById('csv-total-expenses').textContent = formatCurrency(totalExpenses);
+    const netEl = document.getElementById('csv-net-change');
+    netEl.textContent = (net >= 0 ? '+' : '') + formatCurrency(net);
+    netEl.style.color = net >= 0 ? 'var(--emerald)' : 'var(--coral)';
+
+    // Preview first 5 rows
+    const previewEl = document.getElementById('csv-preview-rows');
+    previewEl.innerHTML = '';
+    rows.slice(0, 5).forEach(r => {
+      const isInc = r.amount > 0;
+      const row = document.createElement('div');
+      row.className = 'csv-preview-row';
+      row.innerHTML = `
+        <span class="csv-preview-desc">${r.description}</span>
+        <span style="color:${isInc ? 'var(--emerald)' : 'var(--coral)'}; font-weight:600; font-size:0.8rem;">
+          ${isInc ? '+' : ''}₪${Math.abs(r.amount).toLocaleString()}
+        </span>
+      `;
+      previewEl.appendChild(row);
+    });
+    if (rows.length > 5) {
+      const more = document.createElement('div');
+      more.style.cssText = 'font-size:0.7rem; color:var(--text-muted); text-align:center; padding-top:0.25rem;';
+      more.textContent = `+ ${rows.length - 5} more rows`;
+      previewEl.appendChild(more);
+    }
 
     updateUIBalances(true);
     applyFilters();
-    
+
     stmtResult.style.display = 'block';
-    terminalWrite('Statement processed successfully. checking balance adjusted.', 'success');
-    showToast('Secure bank statement CSV parsed. Ledger balances refreshed!');
+    terminalWrite(`csv.parse(): ${rows.length} rows → net ${net >= 0 ? '+' : ''}₪${Math.abs(net).toLocaleString()}`, 'success');
+    showToast(`${rows.length} transactions imported. Liquid balance updated.`);
   }
 
   // 2. Payslip Uploader
@@ -1530,6 +1574,177 @@ function setupMoneyEditFlow() {
   });
 }
 
+// ─── Bank Fallback: CSV Parser ───────────────────────────────────────────────
+
+const CSV_COLUMN_ALIASES = {
+  date:        ['date', 'תאריך', 'transaction date', 'value date', 'תאריך ערך'],
+  description: ['description', 'תיאור', 'details', 'narrative', 'payee', 'תיאור פעולה', 'שם בית עסק'],
+  amount:      ['amount', 'סכום', 'credit/debit', 'credit', 'sum', 'transaction amount', 'זכות/חובה']
+};
+
+function normalizeCsvHeader(raw) {
+  return raw.trim().toLowerCase().replace(/["‏‎]/g, '');
+}
+
+function resolveColumn(headers, aliases) {
+  for (const alias of aliases) {
+    const idx = headers.findIndex(h => h.includes(alias));
+    if (idx !== -1) return idx;
+  }
+  return -1;
+}
+
+function parseBankCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) return [];
+
+  const headers = lines[0].split(',').map(normalizeCsvHeader);
+
+  const dateIdx   = resolveColumn(headers, CSV_COLUMN_ALIASES.date);
+  const descIdx   = resolveColumn(headers, CSV_COLUMN_ALIASES.description);
+  const amountIdx = resolveColumn(headers, CSV_COLUMN_ALIASES.amount);
+
+  // Fallback: assume columns 0=date, 1=desc, 2=amount
+  const dIdx = dateIdx   !== -1 ? dateIdx   : 0;
+  const nIdx = descIdx   !== -1 ? descIdx   : 1;
+  const aIdx = amountIdx !== -1 ? amountIdx : 2;
+
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(',').map(c => c.replace(/^"|"$/g, '').trim());
+    if (cols.length < 2) continue;
+
+    const rawAmount = parseFloat(cols[aIdx]?.replace(/[,₪\s]/g, '') || '0');
+    if (isNaN(rawAmount) || rawAmount === 0) continue;
+
+    rows.push({
+      date:        cols[dIdx] || new Date().toISOString().slice(0, 10),
+      description: cols[nIdx] || 'Bank Transaction',
+      amount:      rawAmount
+    });
+  }
+  return rows;
+}
+
+function applyCSVRows(rows) {
+  let totalIncome = 0;
+  let totalExpenses = 0;
+
+  rows.forEach(row => {
+    const isIncome = row.amount > 0;
+    const abs = Math.abs(row.amount);
+
+    if (isIncome) {
+      state.balances.liquid += abs;
+      totalIncome += abs;
+    } else {
+      state.balances.liquid -= abs;
+      totalExpenses += abs;
+    }
+
+    state.transactions.unshift({
+      date:        row.date,
+      description: row.description,
+      category:    isIncome ? 'Salary' : 'Expense',
+      source:      'CSV Import',
+      amount:      abs,
+      type:        isIncome ? 'INCOME' : 'EXPENSE'
+    });
+  });
+
+  return { totalIncome, totalExpenses, net: totalIncome - totalExpenses };
+}
+
+// ─── Bank Fallback: Quick Manual Entry ───────────────────────────────────────
+
+function executeManualBankTransaction(amount, isIncome, category) {
+  const abs = Math.abs(amount);
+  if (isIncome) {
+    state.balances.liquid += abs;
+  } else {
+    state.balances.liquid -= abs;
+  }
+
+  state.transactions.unshift({
+    date:        new Date().toISOString().slice(0, 10),
+    description: category,
+    category:    category,
+    source:      'Manual Entry',
+    amount:      abs,
+    type:        isIncome ? 'INCOME' : 'EXPENSE'
+  });
+
+  updateUIBalances(true);
+  applyFilters();
+
+  const netWorth = getNetWorth();
+  state.netWorthHistory.push(netWorth);
+  if (state.netWorthHistory.length > 10) state.netWorthHistory.shift();
+  if (sparklineChart) sparklineChart.updateSeries([{ data: state.netWorthHistory }]);
+
+  terminalWrite(
+    `manual_bank.entry(): ${isIncome ? '+' : '-'}₪${abs.toLocaleString()} [${category}]`,
+    'success'
+  );
+}
+
+function setupQuickBankEntry() {
+  const btnIncome  = document.getElementById('quick-type-income');
+  const btnExpense = document.getElementById('quick-type-expense');
+  const amountEl   = document.getElementById('quick-amount');
+  const categoryEl = document.getElementById('quick-category');
+  const btnSubmit  = document.getElementById('btn-quick-add');
+  const confirmEl  = document.getElementById('quick-add-confirm');
+
+  let isIncome = true;
+
+  btnIncome.addEventListener('click', () => {
+    isIncome = true;
+    btnIncome.classList.add('active');
+    btnExpense.classList.remove('active');
+    amountEl.style.color = 'var(--emerald)';
+  });
+
+  btnExpense.addEventListener('click', () => {
+    isIncome = false;
+    btnExpense.classList.add('active');
+    btnIncome.classList.remove('active');
+    amountEl.style.color = 'var(--coral)';
+  });
+
+  btnSubmit.addEventListener('click', () => {
+    const amount = parseFloat(amountEl.value);
+    if (!amount || amount <= 0) {
+      showToast('Enter a valid amount.', 'error');
+      amountEl.focus();
+      return;
+    }
+
+    const category = categoryEl.value;
+    executeManualBankTransaction(amount, isIncome, category);
+
+    const sign = isIncome ? '+' : '−';
+    const color = isIncome ? 'var(--emerald)' : 'var(--coral)';
+    confirmEl.style.display = 'flex';
+    confirmEl.style.color = color;
+    confirmEl.innerHTML = `<i data-lucide="check-circle"></i> ${sign}₪${amount.toLocaleString()} · ${category} logged`;
+    lucide.createIcons();
+
+    amountEl.value = '';
+    amountEl.focus();
+
+    setTimeout(() => { confirmEl.style.display = 'none'; }, 2500);
+    showToast(`${sign}₪${amount.toLocaleString()} logged to bank balance.`, isIncome ? 'success' : 'info');
+  });
+
+  // Submit on Enter key in amount field
+  amountEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') btnSubmit.click();
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 // ─── Pay Slip Allocation Service ─────────────────────────────────────────────
 
 function handleMonthlyPaySlipAllocation(data) {
@@ -1619,6 +1834,7 @@ function initApp() {
   setupLedgerFilters();
   setupProjectionsSlider();
 
+  setupQuickBankEntry();
   setupAllocationModal();
   setupOnboardingFlow();
   if (!localStorage.getItem('onboardingCompleted')) {

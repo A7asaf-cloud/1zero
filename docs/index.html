@@ -10,8 +10,8 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script type="module" crossorigin src="/1zero/assets/index-6NayOSwH.js"></script>
-    <link rel="stylesheet" crossorigin href="/1zero/assets/index-DyOXIZFk.css">
+    <script type="module" crossorigin src="/1zero/assets/index-QOppjKhg.js"></script>
+    <link rel="stylesheet" crossorigin href="/1zero/assets/index-D8ztiXn9.css">
   <link rel="manifest" href="/1zero/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/1zero/registerSW.js"></script></head>
   <body>
     <!-- Adaptive App Shell (Combines Desktop Sidebar and Mobile layouts) -->
@@ -217,8 +217,8 @@
                   <span>Connect Portals</span>
                 </button>
                 <button class="tab-btn" data-tab="tab-statements">
-                  <i data-lucide="file-text"></i>
-                  <span>Import Statement</span>
+                  <i data-lucide="zap"></i>
+                  <span>Bank Fallback</span>
                 </button>
                 <button class="tab-btn" data-tab="tab-payslip">
                   <i data-lucide="file-text"></i>
@@ -280,39 +280,110 @@
                 </div>
               </div>
 
-              <!-- Sub-tab 2: Statements Uploader -->
+              <!-- Sub-tab 2: Bank Fallback (Quick Entry + CSV Import) -->
               <div class="tab-content" id="tab-statements">
+
+                <!-- ── A. Quick Manual Entry Widget ── -->
+                <div class="quick-add-widget">
+                  <div class="quick-add-header">
+                    <span class="quick-add-title">
+                      <i data-lucide="zap"></i>
+                      Quick Bank Entry
+                    </span>
+                    <span class="badge badge-income">5 sec</span>
+                  </div>
+
+                  <!-- Income / Expense Toggle -->
+                  <div class="type-toggle-group">
+                    <button class="type-toggle-btn active" id="quick-type-income" data-type="income">
+                      <i data-lucide="plus-circle"></i>
+                      <span>Income (+)</span>
+                    </button>
+                    <button class="type-toggle-btn" id="quick-type-expense" data-type="expense">
+                      <i data-lucide="minus-circle"></i>
+                      <span>Expense (−)</span>
+                    </button>
+                  </div>
+
+                  <!-- Amount + Category row -->
+                  <div class="quick-add-fields">
+                    <div class="quick-amount-wrapper">
+                      <span class="quick-currency-symbol">₪</span>
+                      <input type="number" id="quick-amount" class="quick-amount-input" placeholder="0.00" min="0" step="0.01" inputmode="decimal" />
+                    </div>
+                    <select id="quick-category" class="quick-category-select">
+                      <option value="Salary">Salary</option>
+                      <option value="Freelance">Freelance</option>
+                      <option value="Groceries">Groceries</option>
+                      <option value="Rent">Rent</option>
+                      <option value="Car">Car / Fuel</option>
+                      <option value="Utilities">Utilities</option>
+                      <option value="Food & Dining">Food & Dining</option>
+                      <option value="General Savings">General Savings</option>
+                      <option value="Leisure">Leisure</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+
+                  <button id="btn-quick-add" class="btn-quick-submit">
+                    <i data-lucide="check"></i>
+                    <span>Log Entry</span>
+                  </button>
+
+                  <!-- Confirmation flash -->
+                  <div id="quick-add-confirm" class="quick-add-confirm" style="display:none;"></div>
+                </div>
+
+                <!-- ── Divider ── -->
+                <div class="fallback-divider">
+                  <span>or import a full statement</span>
+                </div>
+
+                <!-- ── B. CSV / Excel File Import ── -->
                 <div class="upload-container" id="statement-dropzone">
                   <div class="upload-icon">
-                    <i data-lucide="credit-card"></i>
+                    <i data-lucide="file-spreadsheet"></i>
                   </div>
-                  <div class="upload-text">Upload Checking/CC Statements (CSV/PDF)</div>
-                  <div class="upload-subtext">Drag and drop file or tap to browse</div>
-                  <input type="file" id="statement-file-input" class="hidden-file-input" accept=".csv,.pdf" />
+                  <div class="upload-text">Bank Export File (.csv / .xlsx)</div>
+                  <div class="upload-subtext">Download from your bank app → drop here</div>
+                  <input type="file" id="statement-file-input" class="hidden-file-input" accept=".csv,.xlsx,.xls" />
 
-                  <!-- Scanner animation overlay -->
                   <div class="scanner-overlay" id="statement-scanner">
                     <div class="scan-beam"></div>
                     <i data-lucide="cpu" style="width: 32px; height: 32px; color: var(--emerald); animation: spin 3s linear infinite;"></i>
-                    <div class="scanner-status" id="statement-status-text">Scanning bank statement CSV...</div>
+                    <div class="scanner-status" id="statement-status-text">Parsing CSV rows...</div>
                     <div class="progress-bar-container">
                       <div class="progress-bar-fill" id="statement-progress-fill"></div>
                     </div>
                   </div>
                 </div>
 
+                <!-- CSV Preview Card -->
                 <div class="extracted-data-card" id="statement-result-card" style="display: none;">
-                  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.75rem;">
                     <span style="font-weight: 700; color: var(--emerald); font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
                       <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i>
-                      <span>Statement Upload Extracted</span>
+                      <span>CSV Parsed</span>
                     </span>
-                    <span id="extracted-stmt-details" style="font-size: 0.7rem; color: var(--text-muted);">Transactions: 3</span>
+                    <span id="extracted-stmt-details" style="font-size: 0.7rem; color: var(--text-muted);">0 rows</span>
                   </div>
-                  <div style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">
-                    Checking account updated. Added: Wolt Refund (+₪120), Shufersal (-₪450), and Gas Station (-₪180).
+                  <div class="csv-summary-grid">
+                    <div>
+                      <div style="font-size: 0.65rem; color: var(--text-muted);">Total Income</div>
+                      <div style="font-size: 0.95rem; font-weight: 700; color: var(--emerald);" id="csv-total-income">₪0</div>
+                    </div>
+                    <div>
+                      <div style="font-size: 0.65rem; color: var(--text-muted);">Total Expenses</div>
+                      <div style="font-size: 0.95rem; font-weight: 700; color: var(--coral);" id="csv-total-expenses">₪0</div>
+                    </div>
+                    <div>
+                      <div style="font-size: 0.65rem; color: var(--text-muted);">Net Change</div>
+                      <div style="font-size: 0.95rem; font-weight: 700;" id="csv-net-change">₪0</div>
+                    </div>
                   </div>
+                  <div id="csv-preview-rows" style="margin-top: 0.65rem; display: flex; flex-direction: column; gap: 0.3rem;"></div>
                 </div>
+
               </div>
 
               <!-- Sub-tab 3: Payslip Uploader -->
