@@ -1255,246 +1255,66 @@ function setupProjectionsSlider() {
   document.getElementById('years-slider').addEventListener('input', updatePensionProjections);
 }
 
-// Onboarding Entry Interview flow state
-let onboardingIncomes = [];
-
 function setupOnboardingFlow() {
-  const modal = document.getElementById('onboarding-modal');
-  const sliderSalary = document.getElementById('ob-slider-salary');
-  const inputSalary = document.getElementById('ob-input-salary');
-  const btnAddIncome = document.getElementById('ob-btn-add-income');
-  const incomeListContainer = document.getElementById('ob-income-list-container');
+  const modal    = document.getElementById('onboarding-modal');
   const btnFinish = document.getElementById('ob-btn-finish');
-  const btnRerun = document.getElementById('btn-rerun-onboarding');
-
+  const btnRerun  = document.getElementById('btn-rerun-onboarding');
   if (!modal) return;
 
-  // Synchronize Primary Salary Slider and Numeric Input
-  sliderSalary.addEventListener('input', (e) => {
-    inputSalary.value = e.target.value;
-  });
-  inputSalary.addEventListener('change', (e) => {
-    let val = parseInt(e.target.value) || 2000;
-    val = Math.max(2000, Math.min(val, 100000));
-    inputSalary.value = val;
-    sliderSalary.value = val;
-  });
+  function applySetupValues() {
+    const salaryVal    = parseFloat(document.getElementById('ob-input-salary').value)    || 0;
+    const cashVal      = parseFloat(document.getElementById('ob-input-cash').value)       || 0;
+    const debtVal      = parseFloat(document.getElementById('ob-input-card').value)       || 0;
+    const pensionVal   = parseFloat(document.getElementById('ob-input-pension').value)    || 0;
+    const studyFundVal = parseFloat(document.getElementById('ob-input-studyfund').value)  || 0;
 
-  // Manage steps navigation
-  document.querySelectorAll('.ob-btn-next').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const nextStepNum = parseInt(btn.getAttribute('data-next'));
-      
-      // If moving to step 4, compile summary metrics
-      if (nextStepNum === 4) {
-        const salaryVal = parseInt(inputSalary.value);
-        const extraVal = onboardingIncomes.reduce((sum, item) => sum + item.amount, 0);
-        const cashVal = parseInt(document.getElementById('ob-input-cash').value) || 0;
-        const debtVal = parseInt(document.getElementById('ob-input-card').value) || 0;
-        const pensionVal = parseInt(document.getElementById('ob-input-pension').value) || 0;
-        const studyFundVal = parseInt(document.getElementById('ob-input-studyfund').value) || 0;
+    state.balances.liquid      = cashVal;
+    state.creditOutstanding    = debtVal;
+    state.balances.pension     = pensionVal;
+    state.balances.studyFund   = studyFundVal;
+    state.balances.stocks      = 0;
+    state.stocksHoldings       = [];
+    state.stockAllocation      = [];
 
-        document.getElementById('ob-sum-salary').textContent = formatCurrency(salaryVal);
-        document.getElementById('ob-sum-extra').textContent = formatCurrency(extraVal);
-        document.getElementById('ob-sum-cash').textContent = formatCurrency(cashVal);
-        document.getElementById('ob-sum-debt').textContent = formatCurrency(debtVal);
-        document.getElementById('ob-sum-pension').textContent = formatCurrency(pensionVal);
-        document.getElementById('ob-sum-studyfund').textContent = formatCurrency(studyFundVal);
-      }
-
-      switchToOnboardingStep(nextStepNum);
-    });
-  });
-
-  document.querySelectorAll('.ob-btn-prev').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const prevStepNum = parseInt(btn.getAttribute('data-prev'));
-      switchToOnboardingStep(prevStepNum);
-    });
-  });
-
-  // Add custom income item
-  btnAddIncome.addEventListener('click', () => {
-    const descInput = document.getElementById('ob-income-desc');
-    const amountInput = document.getElementById('ob-income-amount');
-    
-    const desc = descInput.value.trim();
-    const amount = parseFloat(amountInput.value);
-
-    if (!desc || isNaN(amount) || amount <= 0) {
-      showToast('Please enter a valid description and amount.', 'error');
-      return;
-    }
-
-    onboardingIncomes.push({ id: Date.now(), desc, amount });
-    descInput.value = '';
-    amountInput.value = '';
-    renderOnboardingIncomes();
-  });
-
-  function renderOnboardingIncomes() {
-    incomeListContainer.innerHTML = '';
-    
-    if (onboardingIncomes.length === 0) {
-      incomeListContainer.innerHTML = `
-        <div class="empty-list-text" style="color: var(--text-muted); font-size: 0.75rem; text-align: center; padding: 0.5rem;">No additional incomes added yet.</div>
-      `;
-      return;
-    }
-
-    onboardingIncomes.forEach(item => {
-      const row = document.createElement('div');
-      row.className = 'ob-income-row';
-      row.innerHTML = `
-        <span>${item.desc}</span>
-        <span>${formatCurrency(item.amount)}</span>
-        <button type="button" class="ob-btn-remove-income" data-id="${item.id}">✕</button>
-      `;
-
-      row.querySelector('.ob-btn-remove-income').addEventListener('click', () => {
-        onboardingIncomes = onboardingIncomes.filter(i => i.id !== item.id);
-        renderOnboardingIncomes();
-      });
-
-      incomeListContainer.appendChild(row);
-    });
-  }
-
-  // Complete onboarding wizard
-  btnFinish.addEventListener('click', () => {
-    const salaryVal = parseInt(inputSalary.value) || 15000;
-    const cashVal = parseInt(document.getElementById('ob-input-cash').value) || 0;
-    const debtVal = parseInt(document.getElementById('ob-input-card').value) || 0;
-    const pensionVal = parseInt(document.getElementById('ob-input-pension').value) || 0;
-    const studyFundVal = parseInt(document.getElementById('ob-input-studyfund').value) || 0;
-
-    // Apply values to app state
-    state.balances.liquid = cashVal;
-    state.creditOutstanding = debtVal;
-    state.balances.pension = pensionVal;
-    state.balances.studyFund = studyFundVal;
-    state.balances.stocks = 0;
-    state.stocksHoldings = [];
-    state.stockAllocation = [];
-
-    // Disconnect all default portal connections
-    Object.keys(state.connections).forEach(portalKey => {
-      state.connections[portalKey] = false;
-      const btn = document.getElementById(`btn-portal-${portalKey}`);
-      if (btn) {
-        btn.classList.remove('connected');
-        btn.textContent = portalKey === 'clearinghouse' ? 'Verify Clearinghouse' : 'Secure Sync';
-      }
-      const statusEl = document.getElementById(`status-${portalKey}`);
-      if (statusEl) {
-        statusEl.className = 'portal-card-status disconnected';
-        statusEl.innerHTML = `<span class="status-dot"></span>Disconnected`;
-      }
-    });
-
-    // Build fresh transaction list based on onboarding inputs
     const todayStr = new Date().toISOString().slice(0, 10);
-    const newTxList = [];
+    state.transactions = salaryVal > 0 ? [{
+      date: todayStr, description: 'Monthly Salary',
+      category: 'Salary', source: 'Pay Slip', amount: salaryVal, type: 'INCOME'
+    }] : [];
 
-    // Add Primary Salary Income
-    newTxList.push({
-      date: todayStr,
-      description: 'Monthly Salary (Primary)',
-      category: 'Salary',
-      source: 'Pay Slip',
-      amount: salaryVal,
-      type: 'INCOME'
-    });
-
-    // Add Additional Incomes
-    onboardingIncomes.forEach(item => {
-      newTxList.push({
-        date: todayStr,
-        description: item.desc,
-        category: 'Salary',
-        source: 'Manual Entry',
-        amount: item.amount,
-        type: 'INCOME'
-      });
-    });
-
-    // Append some mock generic expenses to populate the list realistically
-    newTxList.push(
-      { date: todayStr, description: 'Supermarket Grocery Sync', category: 'Food & Dining', source: 'Bank Statement', amount: 450, type: 'EXPENSE' },
-      { date: todayStr, description: 'Electricity Utilities Sync', category: 'Utilities', source: 'Bank Statement', amount: 320, type: 'EXPENSE' }
-    );
-
-    state.transactions = newTxList;
-
-    // Re-initialize Net Worth History sparkline representation
     const freshNetWorth = getNetWorth();
-    state.netWorthHistory = [freshNetWorth - 15000, freshNetWorth - 10000, freshNetWorth - 5000, freshNetWorth];
+    state.netWorthHistory = [
+      Math.max(freshNetWorth - 20000, 0),
+      Math.max(freshNetWorth - 10000, 0),
+      Math.max(freshNetWorth - 3000, 0),
+      freshNetWorth
+    ];
 
-    // Persist onboarding completion status
     localStorage.setItem('onboardingCompleted', 'true');
-    
-    // Reset steps to step 1 for next time
-    switchToOnboardingStep(1);
     modal.classList.remove('active');
 
-    // Update charts and GUI values
     updateUIBalances(true);
     applyFilters();
     renderStocksList();
-    if (sparklineChart) {
-      sparklineChart.updateSeries([{ data: state.netWorthHistory }]);
-    }
-    if (donutChart) {
-      donutChart.updateSeries([100]);
-      donutChart.updateOptions({ 
-        labels: ['No Assets'],
-        colors: ['#22252d']
-      });
-    }
+    if (sparklineChart) sparklineChart.updateSeries([{ data: state.netWorthHistory }]);
 
-    terminalWrite('Onboarding config loaded. Cash flow ledger initialized.', 'success');
-    showToast('Entry interview completed! Welcome dashboard configured.');
-  });
-
-  // Switch wizard display steps
-  function switchToOnboardingStep(stepNumber) {
-    document.querySelectorAll('.onboarding-step').forEach(step => {
-      step.classList.remove('active');
-    });
-    document.getElementById(`onboarding-step-${stepNumber}`).classList.add('active');
-
-    // Update indicators
-    document.querySelectorAll('.onboarding-stepper .step-dot').forEach(dot => {
-      const dotStep = parseInt(dot.getAttribute('data-step'));
-      if (dotStep === stepNumber) {
-        dot.classList.add('active');
-      } else {
-        dot.classList.remove('active');
-      }
-    });
+    terminalWrite('Setup complete. Dashboard initialized.', 'success');
+    showToast('All set! Your dashboard is ready.');
   }
 
-  // Bind Rerun button inside settings
+  if (btnFinish) btnFinish.addEventListener('click', applySetupValues);
+
+  // "Edit Setup" button in Settings
   if (btnRerun) {
     btnRerun.addEventListener('click', () => {
-      // Clear onboarding completed flag
       localStorage.removeItem('onboardingCompleted');
-
-      // Switch view panel visibility to close settings/devops
-      document.getElementById('nav-home').click();
-      
-      // Reset inputs & state
-      onboardingIncomes = [];
-      document.getElementById('ob-income-desc').value = '';
-      document.getElementById('ob-income-amount').value = '';
-      document.getElementById('ob-input-cash').value = '0';
-      document.getElementById('ob-input-card').value = '0';
-      document.getElementById('ob-input-pension').value = '0';
-      document.getElementById('ob-input-studyfund').value = '0';
-      renderOnboardingIncomes();
-      
-      switchToOnboardingStep(1);
+      // Pre-fill with current values so user sees what they entered before
+      document.getElementById('ob-input-cash').value      = state.balances.liquid      || '';
+      document.getElementById('ob-input-card').value      = state.creditOutstanding    || '';
+      document.getElementById('ob-input-pension').value   = state.balances.pension     || '';
+      document.getElementById('ob-input-studyfund').value = state.balances.studyFund   || '';
       modal.classList.add('active');
+      lucide.createIcons();
     });
   }
 }
@@ -1951,6 +1771,7 @@ function initApp() {
   setupQuickBankEntry();
   setupAllocationModal();
   setupOnboardingFlow();
+  // Always show setup if no data saved yet
   if (!localStorage.getItem('onboardingCompleted')) {
     const modal = document.getElementById('onboarding-modal');
     if (modal) modal.classList.add('active');

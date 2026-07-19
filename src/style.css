@@ -2454,3 +2454,107 @@ body {
     font-size: 0.9rem;
   }
 }
+
+/* ── Clean Asset Setup Form ──────────────────────────────────────────────────── */
+.setup-header {
+  text-align: center;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1.25rem;
+}
+.setup-logo {
+  width: 48px; height: 48px;
+  background: var(--emerald-alpha);
+  border: 1px solid rgba(16,185,129,0.3);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 0.75rem;
+  color: var(--emerald);
+}
+.setup-logo i, .setup-logo svg { width: 24px; height: 24px; }
+.setup-title {
+  font-size: 1.25rem; font-weight: 700;
+  color: var(--text-main); margin-bottom: 0.35rem;
+}
+.setup-subtitle {
+  font-size: 0.78rem; color: var(--text-muted); line-height: 1.5;
+}
+
+.setup-fields {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  max-height: 55vh; overflow-y: auto;
+  padding-right: 2px;
+}
+
+.setup-section-label {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.65rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin-top: 0.75rem; margin-bottom: 0.1rem;
+}
+.setup-section-label:first-child { margin-top: 0; }
+.setup-section-label i, .setup-section-label svg { width: 12px; height: 12px; }
+
+.setup-field {
+  display: flex; flex-direction: column; gap: 0.3rem;
+}
+.setup-field label {
+  font-size: 0.8rem; font-weight: 600; color: var(--text-main);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.setup-field label span {
+  font-size: 0.68rem; color: var(--text-muted); font-weight: 400;
+}
+.setup-input-wrap {
+  display: flex; align-items: center;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px; overflow: hidden;
+  transition: border-color 0.15s;
+}
+.setup-input-wrap:focus-within { border-color: var(--emerald); }
+.setup-input-wrap > span {
+  padding: 0 0.75rem;
+  font-size: 1rem; font-weight: 700;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.03);
+  border-right: 1px solid var(--border-color);
+  height: 46px; display: flex; align-items: center;
+  flex-shrink: 0;
+}
+.setup-input-wrap input {
+  flex: 1; border: none; outline: none;
+  background: transparent;
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  font-size: 1rem; font-weight: 600;
+  padding: 0 0.85rem;
+  height: 46px;
+  -moz-appearance: textfield;
+}
+.setup-input-wrap input::-webkit-outer-spin-button,
+.setup-input-wrap input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+.setup-save-btn {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0.6rem;
+  width: 100%; margin-top: 1.25rem;
+  padding: 0.9rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--emerald) 0%, #047857 100%);
+  color: #000; font-family: var(--font-sans);
+  font-size: 0.95rem; font-weight: 700;
+  border: none; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(16,185,129,0.35);
+  transition: opacity 0.15s, transform 0.1s;
+}
+.setup-save-btn:active { opacity: 0.85; transform: scale(0.98); }
+.setup-save-btn i, .setup-save-btn svg { width: 18px; height: 18px; }
+
+/* Override onboarding-box for new layout */
+.onboarding-box {
+  padding: 1.5rem !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+}

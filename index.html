@@ -941,125 +941,86 @@
       </div>
     </div>
 
-    <!-- Onboarding Modal: Entry Interview -->
+    <!-- Onboarding Modal: Simple Asset Setup -->
     <div class="modal-overlay onboarding-modal-overlay" id="onboarding-modal">
       <div class="onboarding-box">
-        <!-- Stepper indicators -->
-        <div class="onboarding-stepper">
-          <div class="step-dot active" data-step="1"></div>
-          <div class="step-dot" data-step="2"></div>
-          <div class="step-dot" data-step="3"></div>
-          <div class="step-dot" data-step="4"></div>
+
+        <div class="setup-header">
+          <div class="setup-logo"><i data-lucide="activity"></i></div>
+          <h2 class="setup-title">Set Up Your Finances</h2>
+          <p class="setup-subtitle">Enter your current balances. You can update them anytime in Settings.</p>
         </div>
 
         <div class="onboarding-steps-container">
-          <!-- Step 1: Welcome & Primary Salary -->
+          <!-- Single Step: All Assets -->
           <div class="onboarding-step active" id="onboarding-step-1">
-            <h2 class="onboarding-title">Welcome to WealthFlow</h2>
-            <p class="onboarding-desc">Let's set up your monthly cash flow. What is your primary net monthly salary (משכורת חודשית נטו)?</p>
-            <div class="form-group" style="margin-top: 1.5rem;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <label class="form-label" style="margin-bottom: 0;">Net Salary (₪)</label>
-                <input type="number" id="ob-input-salary" class="adjust-num-input" value="15000" min="2000" max="100000" style="margin-top: 0;" />
+            <div class="setup-fields">
+
+              <div class="setup-section-label"><i data-lucide="banknote"></i> Income</div>
+              <div class="setup-field">
+                <label>Monthly Net Salary <span>משכורת חודשית נטו</span></label>
+                <div class="setup-input-wrap">
+                  <span>₪</span>
+                  <input type="number" id="ob-input-salary" inputmode="numeric" placeholder="0" min="0" />
+                </div>
               </div>
-              <input type="range" id="ob-slider-salary" min="2000" max="100000" step="500" value="15000" class="slider-adjust theme-slider-emerald" />
+
+              <div class="setup-section-label"><i data-lucide="landmark"></i> Cash & Debt</div>
+              <div class="setup-field">
+                <label>Cash in Bank <span>עובר ושב</span></label>
+                <div class="setup-input-wrap">
+                  <span>₪</span>
+                  <input type="number" id="ob-input-cash" inputmode="numeric" placeholder="0" min="0" />
+                </div>
+              </div>
+              <div class="setup-field">
+                <label>Credit Card Debt <span>חוב אשראי</span></label>
+                <div class="setup-input-wrap">
+                  <span>₪</span>
+                  <input type="number" id="ob-input-card" inputmode="numeric" placeholder="0" min="0" />
+                </div>
+              </div>
+
+              <div class="setup-section-label"><i data-lucide="shield-check"></i> Long-Term Savings</div>
+              <div class="setup-field">
+                <label>Pension Balance <span>יתרת פנסיה</span></label>
+                <div class="setup-input-wrap">
+                  <span>₪</span>
+                  <input type="number" id="ob-input-pension" inputmode="numeric" placeholder="0" min="0" />
+                </div>
+              </div>
+              <div class="setup-field">
+                <label>Keren Hishtalmut <span>קרן השתלמות</span></label>
+                <div class="setup-input-wrap">
+                  <span>₪</span>
+                  <input type="number" id="ob-input-studyfund" inputmode="numeric" placeholder="0" min="0" />
+                </div>
+              </div>
+
             </div>
-            <div class="onboarding-navigation" style="margin-top: 2rem;">
-              <div></div>
-              <button class="btn-modal-submit ob-btn-next" data-next="2">Next Step</button>
-            </div>
+
+            <!-- hidden unused IDs kept for JS compat -->
+            <input type="hidden" id="ob-slider-salary" />
+            <div style="display:none" id="ob-income-list-container"></div>
+            <input type="hidden" id="ob-income-desc" />
+            <input type="hidden" id="ob-income-amount" />
+            <button style="display:none" id="ob-btn-add-income"></button>
+
+            <button class="setup-save-btn" id="ob-btn-finish">
+              <i data-lucide="check"></i>
+              Save & Open Dashboard
+            </button>
           </div>
 
-          <!-- Step 2: Other Incomes -->
-          <div class="onboarding-step" id="onboarding-step-2">
-            <h2 class="onboarding-title">Other Incomes</h2>
-            <p class="onboarding-desc">Do you have other recurring monthly incomes? (e.g. rent, freelance, allowances)</p>
+          <!-- Kept for JS compat (hidden) -->
+          <div class="onboarding-step" id="onboarding-step-2" style="display:none"></div>
+          <div class="onboarding-step" id="onboarding-step-3" style="display:none"></div>
 
-            <div class="ob-income-builder" style="margin-top: 1rem;">
-              <div class="ob-income-form" style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 0.5rem; margin-bottom: 1rem;">
-                <input type="text" id="ob-income-desc" class="form-input" placeholder="e.g. Freelance work" style="margin-top: 0;" />
-                <input type="number" id="ob-income-amount" class="form-input" placeholder="Amount (₪)" style="margin-top: 0;" />
-                <button type="button" class="btn-sync" id="ob-btn-add-income" style="padding: 0 0.75rem; min-height: 38px;">Add</button>
-              </div>
-
-              <div class="ob-income-list" id="ob-income-list-container" style="max-height: 150px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px; padding: 0.5rem;">
-                <div class="empty-list-text" style="color: var(--text-muted); font-size: 0.75rem; text-align: center; padding: 0.5rem;">No additional incomes added yet.</div>
-              </div>
-            </div>
-
-            <div class="onboarding-navigation" style="margin-top: 1.5rem;">
-              <button class="btn-modal-cancel ob-btn-prev" data-prev="1">Back</button>
-              <button class="btn-modal-submit ob-btn-next" data-next="3">Next Step</button>
-            </div>
-          </div>
-
-          <!-- Step 3: Starting Balances -->
-          <div class="onboarding-step" id="onboarding-step-3">
-            <h2 class="onboarding-title">Starting Balances</h2>
-            <p class="onboarding-desc">Help us initialize your ledger. What are your starting balances today?</p>
-
-            <div class="form-group" style="margin-top: 1rem;">
-              <label class="form-label" for="ob-input-cash">Initial Liquid Cash (עובר ושב)</label>
-              <input type="number" id="ob-input-cash" class="form-input" value="0" min="0" required />
-            </div>
-
-            <div class="form-group" style="margin-top: 1rem;">
-              <label class="form-label" for="ob-input-card">Outstanding Credit Card Balance (חוב כרטיס אשראי)</label>
-              <input type="number" id="ob-input-card" class="form-input" value="0" min="0" required />
-            </div>
-
-            <div class="form-group" style="margin-top: 1rem;">
-              <label class="form-label" for="ob-input-pension">Starting Pension Balance (יתרת פנסיה)</label>
-              <input type="number" id="ob-input-pension" class="form-input" value="0" min="0" required />
-            </div>
-
-            <div class="form-group" style="margin-top: 1rem;">
-              <label class="form-label" for="ob-input-studyfund">Starting Study Fund Balance (קרן השתלמות)</label>
-              <input type="number" id="ob-input-studyfund" class="form-input" value="0" min="0" required />
-            </div>
-
-            <div class="onboarding-navigation" style="margin-top: 1.5rem;">
-              <button class="btn-modal-cancel ob-btn-prev" data-prev="2">Back</button>
-              <button class="btn-modal-submit ob-btn-next" data-next="4">Summary</button>
-            </div>
-          </div>
-
-          <!-- Step 4: Summary & Confirm -->
-          <div class="onboarding-step" id="onboarding-step-4">
-            <h2 class="onboarding-title">Ready to Flow!</h2>
-            <p class="onboarding-desc">Here is a summary of your configuration. Confirm to customize your dashboard:</p>
-
-            <div class="ob-summary-card" style="margin-top: 1rem; border: 1px solid var(--border-color); border-radius: 6px; padding: 1rem; background: rgba(255,255,255,0.02);">
-              <div class="metric-row" style="margin-bottom: 0.5rem;">
-                <span class="metric-label">Monthly Salary</span>
-                <span class="metric-value" id="ob-sum-salary" style="font-weight: 700; color: var(--emerald);">₪15,000</span>
-              </div>
-              <div class="metric-row" style="margin-bottom: 0.5rem;">
-                <span class="metric-label">Other Monthly Incomes</span>
-                <span class="metric-value" id="ob-sum-extra" style="font-weight: 700;">₪0</span>
-              </div>
-              <div class="metric-row" style="margin-bottom: 0.5rem;">
-                <span class="metric-label">Initial Cash</span>
-                <span class="metric-value" id="ob-sum-cash" style="font-weight: 700; color: var(--cyan);">₪0</span>
-              </div>
-              <div class="metric-row" style="margin-bottom: 0.5rem;">
-                <span class="metric-label">Credit Card Debt</span>
-                <span class="metric-value" id="ob-sum-debt" style="font-weight: 700; color: var(--coral);">₪0</span>
-              </div>
-              <div class="metric-row" style="margin-bottom: 0.5rem;">
-                <span class="metric-label">Pension Balance</span>
-                <span class="metric-value" id="ob-sum-pension" style="font-weight: 700; color: var(--violet);">₪0</span>
-              </div>
-              <div class="metric-row" style="margin-bottom: 0.5rem;">
-                <span class="metric-label">Study Fund Balance</span>
-                <span class="metric-value" id="ob-sum-studyfund" style="font-weight: 700; color: var(--violet);">₪0</span>
-              </div>
-            </div>
-
-            <div class="onboarding-navigation" style="margin-top: 1.5rem;">
-              <button class="btn-modal-cancel ob-btn-prev" data-prev="3">Back</button>
-              <button class="btn-modal-submit" id="ob-btn-finish" style="background: linear-gradient(135deg, var(--emerald) 0%, #047857 100%);">Complete & Launch</button>
-            </div>
+          <!-- Step 4: hidden for compat -->
+          <div class="onboarding-step" id="onboarding-step-4" style="display:none">
+            <span id="ob-sum-salary"></span><span id="ob-sum-extra"></span>
+            <span id="ob-sum-cash"></span><span id="ob-sum-debt"></span>
+            <span id="ob-sum-pension"></span><span id="ob-sum-studyfund"></span>
           </div>
         </div>
       </div>
