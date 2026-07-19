@@ -15,7 +15,7 @@
   <body>
     <!-- Adaptive App Shell (Combines Desktop Sidebar and Mobile layouts) -->
     <div class="adaptive-app-shell">
-      
+
       <!-- Left Sidebar (Desktop Widescreen only, hidden on Mobile) -->
       <aside class="sidebar">
         <div>
@@ -81,7 +81,7 @@
             <i data-lucide="activity"></i>
             <span>WealthFlow</span>
           </div>
-          
+
           <div class="header-right-meta">
             <div class="security-badge-shield desktop-only">
               <i data-lucide="shield-check"></i>
@@ -97,6 +97,8 @@
           <!-- View 1: Dashboard -->
           <section class="app-view active-view" id="view-home">
             <div class="view-grid-layout">
+
+              <div class="view-section-label">Overview</div>
 
               <!-- Net Worth Hero widget -->
               <div class="header-widget grid-span-8">
@@ -127,8 +129,10 @@
                   <span class="badge badge-source">Live</span>
                 </div>
                 <div class="dashboard-allocation-layout">
-                  <!-- Left: donut chart -->
-                  <div id="allocation-donut" style="min-height:160px; width:160px; flex-shrink:0;"></div>
+                  <!-- Left: donut chart wrapped for mobile centering -->
+                  <div class="allocation-donut-wrapper">
+                    <div id="allocation-donut" style="min-height:160px; width:160px; flex-shrink:0;"></div>
+                  </div>
                   <!-- Right: 4 mini cards in 2x2 grid -->
                   <div class="dash-asset-cards">
                     <div class="dash-card dash-card-emerald">
@@ -160,7 +164,7 @@
                 <div class="panel-header">
                   <h3 class="panel-title"><i data-lucide="bar-chart-2"></i><span>This Month</span></h3>
                 </div>
-                <div class="monthly-summary-row">
+                <div class="monthly-summary-row monthly-summary-grid">
                   <div class="monthly-stat">
                     <span class="monthly-stat-label">Income</span>
                     <span class="monthly-stat-value emerald" id="dash-month-income">₪0</span>
@@ -189,6 +193,9 @@
           <!-- View 2: My Assets -->
           <section class="app-view" id="view-portfolio">
             <div class="view-grid-layout">
+
+              <div class="view-section-label">Your Portfolio</div>
+
               <!-- Long-Term Savings Card -->
               <div class="panel theme-violet grid-span-6">
                 <div class="panel-header">
@@ -313,6 +320,8 @@
           <section class="app-view" id="view-money-edit">
             <div class="view-grid-layout">
 
+              <div class="view-section-label">Transactions</div>
+
               <!-- Transaction Ledger Panel -->
               <div class="panel theme-coral grid-span-12">
                 <div class="panel-header">
@@ -403,6 +412,8 @@
                 </h3>
                 <span class="badge badge-source">Secure Ledger</span>
               </div>
+
+              <div class="view-section-label" style="margin-bottom: 0.25rem;">Import &amp; Connect</div>
 
               <!-- Upload Tabs Header -->
               <div class="tabs-header">
@@ -632,6 +643,8 @@
           <section class="app-view" id="view-settings">
             <div class="view-grid-layout">
 
+              <div class="view-section-label">Settings</div>
+
               <!-- Panel 1: Manual Balance Override -->
               <div class="panel theme-violet grid-span-12">
                 <div class="panel-header">
@@ -790,7 +803,7 @@
           <span id="otp-modal-title">Connect Pension Clearinghouse</span>
         </h3>
         <p class="modal-desc" id="otp-modal-desc">Secure OTP pull via SMS channel. Read-Only data access.</p>
-        
+
         <form id="otp-connect-form" onsubmit="return false;">
           <div class="form-group" id="otp-phone-group">
             <label class="form-label" for="otp-phone-input">Mobile Phone Number (טלפון נייד)</label>
@@ -821,7 +834,7 @@
           <span>Update Savings Balances</span>
         </h3>
         <p class="modal-desc">Manually adjust your long-term savings balances (Pension & Study Fund).</p>
-        
+
         <form id="update-savings-form" onsubmit="return false;">
           <div class="form-group">
             <label class="form-label" for="savings-pension">Pension Balance (₪)</label>
@@ -848,7 +861,7 @@
           <span>Add Stock / ETF Holding</span>
         </h3>
         <p class="modal-desc">Type the global ticker symbol. Valuation is calculated via web API quote simulation.</p>
-        
+
         <form id="add-asset-form" onsubmit="return false;">
           <div class="form-group">
             <label class="form-label" for="asset-ticker">Ticker Symbol (e.g. SPY, PLTR, TSLA)</label>
@@ -961,14 +974,14 @@
           <div class="onboarding-step" id="onboarding-step-2">
             <h2 class="onboarding-title">Other Incomes</h2>
             <p class="onboarding-desc">Do you have other recurring monthly incomes? (e.g. rent, freelance, allowances)</p>
-            
+
             <div class="ob-income-builder" style="margin-top: 1rem;">
               <div class="ob-income-form" style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 0.5rem; margin-bottom: 1rem;">
                 <input type="text" id="ob-income-desc" class="form-input" placeholder="e.g. Freelance work" style="margin-top: 0;" />
                 <input type="number" id="ob-income-amount" class="form-input" placeholder="Amount (₪)" style="margin-top: 0;" />
                 <button type="button" class="btn-sync" id="ob-btn-add-income" style="padding: 0 0.75rem; min-height: 38px;">Add</button>
               </div>
-              
+
               <div class="ob-income-list" id="ob-income-list-container" style="max-height: 150px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px; padding: 0.5rem;">
                 <div class="empty-list-text" style="color: var(--text-muted); font-size: 0.75rem; text-align: center; padding: 0.5rem;">No additional incomes added yet.</div>
               </div>
@@ -984,7 +997,7 @@
           <div class="onboarding-step" id="onboarding-step-3">
             <h2 class="onboarding-title">Starting Balances</h2>
             <p class="onboarding-desc">Help us initialize your ledger. What are your starting balances today?</p>
-            
+
             <div class="form-group" style="margin-top: 1rem;">
               <label class="form-label" for="ob-input-cash">Initial Liquid Cash (עובר ושב)</label>
               <input type="number" id="ob-input-cash" class="form-input" value="0" min="0" required />
@@ -1015,7 +1028,7 @@
           <div class="onboarding-step" id="onboarding-step-4">
             <h2 class="onboarding-title">Ready to Flow!</h2>
             <p class="onboarding-desc">Here is a summary of your configuration. Confirm to customize your dashboard:</p>
-            
+
             <div class="ob-summary-card" style="margin-top: 1rem; border: 1px solid var(--border-color); border-radius: 6px; padding: 1rem; background: rgba(255,255,255,0.02);">
               <div class="metric-row" style="margin-bottom: 0.5rem;">
                 <span class="metric-label">Monthly Salary</span>
