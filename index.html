@@ -1,0 +1,916 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>WealthFlow | Adaptive Wealth Dashboard</title>
+    <!-- CSS Style File -->
+    <link rel="stylesheet" href="src/style.css" />
+    <!-- ApexCharts CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+  </head>
+  <body>
+    <!-- Adaptive App Shell (Combines Desktop Sidebar and Mobile layouts) -->
+    <div class="adaptive-app-shell">
+      
+      <!-- Left Sidebar (Desktop Widescreen only, hidden on Mobile) -->
+      <aside class="sidebar">
+        <div>
+          <div class="brand">
+            <div class="brand-icon">
+              <i data-lucide="activity"></i>
+            </div>
+            <span class="brand-name">WealthFlow</span>
+          </div>
+
+          <nav>
+            <ul class="nav-list">
+              <li>
+                <button class="nav-link active" data-view="view-home">
+                  <i data-lucide="home"></i>
+                  <span>Home Overview</span>
+                </button>
+              </li>
+              <li>
+                <button class="nav-link" data-view="view-upload">
+                  <i data-lucide="upload-cloud"></i>
+                  <span>Upload & Connect</span>
+                </button>
+              </li>
+              <li>
+                <button class="nav-link" data-view="view-portfolio">
+                  <i data-lucide="pie-chart"></i>
+                  <span>My Portfolios</span>
+                </button>
+              </li>
+              <li>
+                <button class="nav-link" data-view="view-money-edit">
+                  <i data-lucide="edit-3"></i>
+                  <span>Money Edit</span>
+                </button>
+              </li>
+              <li>
+                <button class="nav-link" data-view="view-settings">
+                  <i data-lucide="terminal"></i>
+                  <span>Developer DevOps</span>
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+
+        <div class="sidebar-footer">
+          <div class="user-profile">
+            <div class="user-avatar">AS</div>
+            <div class="user-info">
+              <span class="user-name">Asaf Sharabi</span>
+              <span class="user-role">Administrator</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- App Body (Scrollable viewport content) -->
+      <div class="app-body">
+        <!-- Top App Header Bar -->
+        <header class="app-header-bar">
+          <div class="brand-badge">
+            <i data-lucide="activity"></i>
+            <span>WealthFlow</span>
+          </div>
+          
+          <div class="header-right-meta">
+            <div class="security-badge-shield desktop-only">
+              <i data-lucide="shield-check"></i>
+              <span>AES-256 Secured Ledger</span>
+            </div>
+            <div class="header-profile-badge">AS</div>
+          </div>
+        </header>
+
+        <!-- Viewport Contents -->
+        <main class="views-viewport">
+          
+          <!-- View 1: Home View (Overview metrics, liquid assets, cashflow list/table) -->
+          <section class="app-view active-view" id="view-home">
+            <div class="view-grid-layout">
+              <!-- Net Worth Header widget (Large card) -->
+              <div class="header-widget grid-span-8">
+                <div class="networth-info">
+                  <span class="networth-label">Total Net Worth</span>
+                  <div class="networth-val-container">
+                    <span class="networth-value" id="net-worth-value">₪0</span>
+                    <span class="networth-trend up" id="net-worth-trend">
+                      <i data-lucide="trending-up"></i>
+                      <span id="net-worth-trend-pct">0.0%</span>
+                    </span>
+                  </div>
+                </div>
+                
+                <div class="header-chart-sync">
+                  <div class="sparkline-container" id="net-worth-sparkline"></div>
+                  <button class="btn-sync" id="btn-sync" aria-label="Sync offline balances">
+                    <i data-lucide="refresh-cw"></i>
+                    <span>Sync Ledger</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Liquid Assets Card (Sits next to Net Worth on Desktop) -->
+              <div class="panel theme-emerald grid-span-4">
+                <div class="panel-header">
+                  <h3 class="panel-title">
+                    <i data-lucide="credit-card"></i>
+                    <span>Liquid Balance</span>
+                  </h3>
+                  <span class="badge badge-income">Active</span>
+                </div>
+                <div class="asset-primary-val" id="liquid-val">₪0</div>
+                <div class="asset-metrics">
+                  <div class="metric-row">
+                    <span class="metric-label">Credit Card Balance</span>
+                    <span class="metric-value" style="color: var(--coral);" id="credit-outstanding-val">₪0</span>
+                  </div>
+                  <div class="metric-row">
+                    <span class="metric-label">Billing Cycle Ends</span>
+                    <span class="metric-value" id="billing-cycle-date">10/08/2026</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Cashflow Ledger Panel (Spans full width, adaptive representation) -->
+              <div class="panel theme-coral grid-span-12">
+                <div class="panel-header">
+                  <h3 class="panel-title">
+                    <i data-lucide="file-text"></i>
+                    <span>Recent Cashflow Ledger</span>
+                  </h3>
+                  <button class="btn-add-tx" id="btn-open-tx-modal" aria-label="Add transaction manually">
+                    <i data-lucide="plus"></i>
+                    <span>Add Record</span>
+                  </button>
+                </div>
+
+                <!-- Filters toolbar -->
+                <div class="mobile-filter-row">
+                  <div class="search-container">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" id="ledger-search" class="search-input" placeholder="Search cashflow..." />
+                  </div>
+                  <select id="ledger-filter-category" class="filter-select">
+                    <option value="ALL">All Categories</option>
+                    <option value="Salary">Salary</option>
+                    <option value="Food & Dining">Food & Dining</option>
+                    <option value="Utilities">Utilities</option>
+                    <option value="Investment">Investment</option>
+                    <option value="Shopping">Shopping</option>
+                    <option value="Leisure">Leisure</option>
+                  </select>
+                </div>
+
+                <!-- 1. Mobile Representation (Touch-friendly Swipe List, hidden on Desktop) -->
+                <div class="mobile-only transactions-list-container" id="ledger-list">
+                  <!-- JS Injected vertical swipe rows -->
+                </div>
+
+                <!-- 2. Desktop Representation (Structured Grid Table, hidden on Mobile) -->
+                <div class="desktop-only ledger-table-container">
+                  <table class="ledger-table">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Source</th>
+                        <th>Amount</th>
+                        <th style="width: 50px; text-align: center;">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="ledger-table-body">
+                      <!-- JS Injected table rows -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- View 2: Upload View (Connect Portals and document file uploads) -->
+          <section class="app-view" id="view-upload">
+            <div class="panel theme-emerald">
+              <div class="panel-header" style="margin-bottom: 0.5rem;">
+                <h3 class="panel-title">
+                  <i data-lucide="upload-cloud"></i>
+                  <span>Integrations & Document Uploads</span>
+                </h3>
+                <span class="badge badge-source">Secure Ledger</span>
+              </div>
+
+              <!-- Upload Tabs Header -->
+              <div class="tabs-header">
+                <button class="tab-btn active" data-tab="tab-portals">
+                  <i data-lucide="shield-check"></i>
+                  <span>Connect Portals</span>
+                </button>
+                <button class="tab-btn" data-tab="tab-statements">
+                  <i data-lucide="file-text"></i>
+                  <span>Import Statement</span>
+                </button>
+                <button class="tab-btn" data-tab="tab-payslip">
+                  <i data-lucide="file-text"></i>
+                  <span>Pay Slip (תלוש)</span>
+                </button>
+              </div>
+
+              <!-- Sub-tab 1: Secure Portals Open Banking & Pension Clearinghouse -->
+              <div class="tab-content active" id="tab-portals">
+                <!-- Open Banking Badge -->
+                <div class="security-badge-disclaimer">
+                  <i data-lucide="shield-alert" style="color: var(--emerald);"></i>
+                  <span>Read-Only Access. No username/password stored. Powered securely by Bank Israel's Open Banking standard.</span>
+                </div>
+
+                <div class="integrations-scroll-grid">
+                  <!-- Hapoalim Open Banking Link -->
+                  <div class="connect-portal-card">
+                    <div class="portal-brand-banner hapoalim-banner">
+                      <span>בנק הפועלים</span>
+                    </div>
+                    <div class="portal-card-body">
+                      <span class="portal-card-title">Bank Hapoalim</span>
+                      <span class="portal-card-status disconnected" id="status-hapoalim">
+                        <span class="status-dot"></span>Disconnected
+                      </span>
+                      <button class="btn-connect-portal" id="btn-portal-hapoalim">Secure Sync</button>
+                    </div>
+                  </div>
+
+                  <!-- Leumi Open Banking Link -->
+                  <div class="connect-portal-card">
+                    <div class="portal-brand-banner leumi-banner">
+                      <span>בנק לאומי</span>
+                    </div>
+                    <div class="portal-card-body">
+                      <span class="portal-card-title">Bank Leumi</span>
+                      <span class="portal-card-status disconnected" id="status-leumi">
+                        <span class="status-dot"></span>Disconnected
+                      </span>
+                      <button class="btn-connect-portal" id="btn-portal-leumi">Secure Sync</button>
+                    </div>
+                  </div>
+
+                  <!-- Israel Pension Clearinghouse Link -->
+                  <div class="connect-portal-card clearhouse-card">
+                    <div class="portal-brand-banner clearinghouse-banner">
+                      <span>מסלקת הפנסיה הממלכתית</span>
+                    </div>
+                    <div class="portal-card-body">
+                      <span class="portal-card-title">Pension Clearinghouse</span>
+                      <div class="portal-badge-desc">SMS OTP Verification Pull</div>
+                      <span class="portal-card-status disconnected" id="status-clearinghouse">
+                        <span class="status-dot"></span>Disconnected
+                      </span>
+                      <button class="btn-connect-portal" id="btn-portal-clearinghouse">Verify Clearinghouse</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sub-tab 2: Statements Uploader -->
+              <div class="tab-content" id="tab-statements">
+                <div class="upload-container" id="statement-dropzone">
+                  <div class="upload-icon">
+                    <i data-lucide="credit-card"></i>
+                  </div>
+                  <div class="upload-text">Upload Checking/CC Statements (CSV/PDF)</div>
+                  <div class="upload-subtext">Drag and drop file or tap to browse</div>
+                  <input type="file" id="statement-file-input" class="hidden-file-input" accept=".csv,.pdf" />
+
+                  <!-- Scanner animation overlay -->
+                  <div class="scanner-overlay" id="statement-scanner">
+                    <div class="scan-beam"></div>
+                    <i data-lucide="cpu" style="width: 32px; height: 32px; color: var(--emerald); animation: spin 3s linear infinite;"></i>
+                    <div class="scanner-status" id="statement-status-text">Scanning bank statement CSV...</div>
+                    <div class="progress-bar-container">
+                      <div class="progress-bar-fill" id="statement-progress-fill"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="extracted-data-card" id="statement-result-card" style="display: none;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                    <span style="font-weight: 700; color: var(--emerald); font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
+                      <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i>
+                      <span>Statement Upload Extracted</span>
+                    </span>
+                    <span id="extracted-stmt-details" style="font-size: 0.7rem; color: var(--text-muted);">Transactions: 3</span>
+                  </div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">
+                    Checking account updated. Added: Wolt Refund (+₪120), Shufersal (-₪450), and Gas Station (-₪180).
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sub-tab 3: Payslip Uploader -->
+              <div class="tab-content" id="tab-payslip">
+                <div class="upload-container" id="payslip-dropzone">
+                  <div class="upload-icon">
+                    <i data-lucide="file-text"></i>
+                  </div>
+                  <div class="upload-text">Upload Hebrew Pay Slip (תלוש שכר)</div>
+                  <div class="upload-subtext">Drag and drop file or tap to browse</div>
+                  <input type="file" id="payslip-file-input" class="hidden-file-input" accept=".pdf,image/*" />
+
+                  <!-- Scanner animation overlay -->
+                  <div class="scanner-overlay" id="payslip-scanner">
+                    <div class="scan-beam"></div>
+                    <i data-lucide="cpu" style="width: 32px; height: 32px; color: var(--emerald); animation: spin 3s linear infinite;"></i>
+                    <div class="scanner-status" id="payslip-status-text">Uploading pay slip...</div>
+                    <div class="progress-bar-container">
+                      <div class="progress-bar-fill" id="payslip-progress-fill"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="extracted-data-card" id="payslip-result-card" style="display: none;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 0.75rem;">
+                    <span style="font-weight: 700; color: var(--emerald); font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
+                      <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i>
+                      <span>Pay Slip AI Analysis Complete</span>
+                    </span>
+                    <span id="extracted-slip-date" style="font-size: 0.7rem; color: var(--text-muted);">June 2026</span>
+                  </div>
+                  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; text-align: left;">
+                    <div>
+                      <div style="font-size: 0.65rem; color: var(--text-muted);">Net Pay</div>
+                      <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-main);" id="extracted-net-pay">₪16,240</div>
+                    </div>
+                    <div>
+                      <div style="font-size: 0.65rem; color: var(--text-muted);">Tax Deduct</div>
+                      <div style="font-size: 0.95rem; font-weight: 700; color: var(--coral);" id="extracted-tax">₪2,840</div>
+                    </div>
+                    <div>
+                      <div style="font-size: 0.65rem; color: var(--text-muted);">Pension Alloc</div>
+                      <div style="font-size: 0.95rem; font-weight: 700; color: var(--violet);" id="extracted-pension">₪1,950</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- View 3: Portfolio View (Long term projections, Stock holding simulation) -->
+          <section class="app-view" id="view-portfolio">
+            <div class="view-grid-layout">
+              <!-- Long-Term Savings Card -->
+              <div class="panel theme-violet grid-span-6">
+                <div class="panel-header">
+                  <h3 class="panel-title">
+                    <i data-lucide="calculator"></i>
+                    <span>Long-Term Savings</span>
+                  </h3>
+                  <span id="savings-val" class="asset-primary-val" style="font-size: 1.75rem; margin-bottom: 0;">₪0</span>
+                </div>
+                
+                <div class="asset-secondary-val" style="margin-bottom: 0.25rem; margin-top: 0.25rem; display: flex; justify-content: flex-end; align-items: center;">
+                  <button class="btn-add-tx" id="btn-open-savings-modal" style="padding: 0.25rem 0.65rem; min-height: 28px; font-size: 0.7rem; background-color: var(--violet); border-color: var(--violet);">
+                    <i data-lucide="edit-3"></i>
+                    <span>Edit Savings</span>
+                  </button>
+                </div>
+                
+                <div class="asset-metrics" style="margin-top: 0.5rem; padding-top: 0.5rem;">
+                  <div class="metric-row">
+                    <span class="metric-label">Pension Balance</span>
+                    <span class="metric-value" id="pension-balance-val">₪0</span>
+                  </div>
+                  <div class="metric-row">
+                    <span class="metric-label">Study Fund (קרן השתלמות)</span>
+                    <span class="metric-value" id="study-fund-val">₪0</span>
+                  </div>
+                </div>
+
+                <!-- Projections compound calculator -->
+                <div class="pension-chart-container" style="margin-top: 0.5rem;">
+                  <div class="metric-row" style="margin-bottom: 0.25rem;">
+                    <span class="metric-label" style="font-size: 0.75rem; color: var(--violet); font-weight:600; text-transform:uppercase;">Retirement Age 67:</span>
+                    <span class="metric-value" style="color: var(--violet); font-size: 1rem; font-weight:700;" id="projection-result">₪0</span>
+                  </div>
+                  <div class="projections-slider-container">
+                    <div class="slider-labels">
+                      <span>Contrib: ₪2,200/mo</span>
+                      <span id="slider-years-label">Years left: 25</span>
+                    </div>
+                    <input type="range" id="years-slider" min="5" max="45" value="25" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Stock Portfolio Card with Tickers and Donut Allocation -->
+              <div class="panel theme-cyan grid-span-6">
+                <div class="panel-header">
+                  <h3 class="panel-title">
+                    <i data-lucide="pie-chart"></i>
+                    <span>Stock Portfolio holdings</span>
+                  </h3>
+                  <span id="stocks-val" class="asset-primary-val" style="font-size: 1.75rem; margin-bottom: 0;">₪0</span>
+                </div>
+                
+                <div class="asset-secondary-val" style="margin-bottom: 0.25rem; margin-top: 0.25rem; display: flex; justify-content: space-between; align-items: center;">
+                  <span id="stocks-daily-gain" style="color: var(--emerald); font-weight: 600; font-size: 0.8rem;">₪0 (0.00%) Today</span>
+                  <button class="btn-add-tx" id="btn-open-asset-modal" style="padding: 0.25rem 0.65rem; min-height: 28px; font-size: 0.7rem;">
+                    <i data-lucide="plus"></i>
+                    <span>Add Asset</span>
+                  </button>
+                </div>
+
+                <!-- Holdings List of assets -->
+                <div class="stock-holdings-list-wrapper">
+                  <div class="stock-holdings-header">
+                    <span>Ticker</span>
+                    <span>Shares</span>
+                    <span style="text-align: right;">Current Value</span>
+                  </div>
+                  <div id="stocks-holdings-list">
+                    <!-- JS injected asset rows -->
+                  </div>
+                </div>
+                
+                <!-- Allocation donut chart -->
+                <div id="stock-donut-chart" style="min-height: 140px; margin-top: 0.5rem;"></div>
+              </div>
+
+              <!-- Manual Balances Adjustments Panel -->
+              <div class="panel theme-violet grid-span-12">
+                <div class="panel-header" style="margin-bottom: 0.75rem;">
+                  <h3 class="panel-title">
+                    <i data-lucide="sliders"></i>
+                    <span>Adjust Balances Manually</span>
+                  </h3>
+                  <span class="badge badge-source">Manual Overrides</span>
+                </div>
+                
+                <div class="manual-adjustments-container">
+                  <!-- Pension Slider -->
+                  <div class="adjust-control-group">
+                    <div class="adjust-label-row">
+                      <span class="adjust-title">Pension Balance</span>
+                      <input type="number" id="input-pension" class="adjust-num-input" value="0" step="1000" />
+                    </div>
+                    <input type="range" id="slider-pension" min="0" max="2000000" step="5000" value="0" class="slider-adjust theme-slider-violet" />
+                  </div>
+
+                  <!-- Study Fund Slider -->
+                  <div class="adjust-control-group">
+                    <div class="adjust-label-row">
+                      <span class="adjust-title">Study Fund Balance</span>
+                      <input type="number" id="input-studyfund" class="adjust-num-input" value="0" step="1000" />
+                    </div>
+                    <input type="range" id="slider-studyfund" min="0" max="800000" step="5000" value="0" class="slider-adjust theme-slider-violet" />
+                  </div>
+
+                  <!-- Stock Portfolio Slider -->
+                  <div class="adjust-control-group">
+                    <div class="adjust-label-row">
+                      <span class="adjust-title">Stock Portfolio</span>
+                      <input type="number" id="input-stocks" class="adjust-num-input" value="0" step="1000" />
+                    </div>
+                    <input type="range" id="slider-stocks" min="0" max="1500000" step="5000" value="0" class="slider-adjust theme-slider-cyan" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- View 4: DevOps & Settings view -->
+          <section class="app-view" id="view-settings">
+            <div class="panel theme-cyan">
+              <div class="panel-header" style="margin-bottom: 1.25rem;">
+                <h3 class="panel-title">
+                  <i data-lucide="terminal"></i>
+                  <span>Developer Sync Console</span>
+                </h3>
+                <span class="badge badge-source">DevOps Settings</span>
+              </div>
+
+              <div class="devops-panel-container">
+                <div class="devops-btn-grid">
+                  <button class="devops-btn" id="btn-trigger-backup">
+                    <i data-lucide="database"></i>
+                    <span>Backup Database</span>
+                  </button>
+                  <button class="devops-btn" id="btn-export-config">
+                    <i data-lucide="lock"></i>
+                    <span>Export Config</span>
+                  </button>
+                  <button class="devops-btn" id="btn-github-sync">
+                    <i data-lucide="github"></i>
+                    <span>Push to GitHub</span>
+                  </button>
+                  <button class="devops-btn" id="btn-rerun-onboarding">
+                    <i data-lucide="help-circle"></i>
+                    <span>Rerun Interview</span>
+                  </button>
+                </div>
+
+                <div class="devops-terminal" id="devops-terminal">
+                  <div class="terminal-line terminal-system">[system] Dashboard synchronized. Adaptive layout enabled.</div>
+                  <div class="terminal-line terminal-system">[system] Stocks simulated via internal Web API loaders.</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- View 5: Money Edit View (Manage and direct-edit all bank, card, and savings balances) -->
+          <section class="app-view" id="view-money-edit">
+            <div class="view-grid-layout">
+              <div class="panel theme-violet grid-span-12">
+                <div class="panel-header">
+                  <h3 class="panel-title">
+                    <i data-lucide="edit-3"></i>
+                    <span>Direct Balance Management</span>
+                  </h3>
+                  <span class="badge badge-source">Edit Balances</span>
+                </div>
+                
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.5rem; margin-bottom: 1.5rem;">
+                  Directly adjust your current balances across your accounts below. Changes will immediately update your Net Worth and portfolio calculations.
+                </p>
+
+                <form id="money-edit-form" onsubmit="return false;" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                  <!-- Column 1: Cash & Credit (Short Term) -->
+                  <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                    <h4 style="color: var(--emerald); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;">
+                      Cash & Debt
+                    </h4>
+                    
+                    <!-- Bank / Liquid Cash -->
+                    <div class="form-group">
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <label class="form-label" for="me-input-liquid" style="margin-bottom: 0;">Bank / Liquid Cash (₪)</label>
+                        <input type="number" id="me-input-liquid" class="adjust-num-input" min="0" step="100" />
+                      </div>
+                      <input type="range" id="me-slider-liquid" min="0" max="1000000" step="1000" class="slider-adjust theme-slider-emerald" />
+                    </div>
+
+                    <!-- Credit Card Outstanding -->
+                    <div class="form-group" style="margin-top: 0.5rem;">
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <label class="form-label" for="me-input-credit" style="margin-bottom: 0;">Credit Card Outstanding Debt (₪)</label>
+                        <input type="number" id="me-input-credit" class="adjust-num-input" min="0" step="100" />
+                      </div>
+                      <input type="range" id="me-slider-credit" min="0" max="200000" step="500" class="slider-adjust theme-slider-coral" />
+                    </div>
+                  </div>
+
+                  <!-- Column 2: Long Term Savings & Stock Assets -->
+                  <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                    <h4 style="color: var(--violet); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;">
+                      Investments & Long-Term
+                    </h4>
+
+                    <!-- Pension -->
+                    <div class="form-group">
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <label class="form-label" for="me-input-pension" style="margin-bottom: 0;">Pension Balance (₪)</label>
+                        <input type="number" id="me-input-pension" class="adjust-num-input" min="0" step="1000" />
+                      </div>
+                      <input type="range" id="me-slider-pension" min="0" max="3000000" step="5000" class="slider-adjust theme-slider-violet" />
+                    </div>
+
+                    <!-- Study Fund -->
+                    <div class="form-group" style="margin-top: 0.5rem;">
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <label class="form-label" for="me-input-studyfund" style="margin-bottom: 0;">Study Fund (קרן השתלמות) (₪)</label>
+                        <input type="number" id="me-input-studyfund" class="adjust-num-input" min="0" step="1000" />
+                      </div>
+                      <input type="range" id="me-slider-studyfund" min="0" max="1000000" step="2000" class="slider-adjust theme-slider-violet" />
+                    </div>
+
+                    <!-- Manual Stock Valuation Override -->
+                    <div class="form-group" style="margin-top: 0.5rem;">
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <label class="form-label" for="me-input-stocks" style="margin-bottom: 0;">Stock Portfolio Valuation (₪)</label>
+                        <input type="number" id="me-input-stocks" class="adjust-num-input" min="0" step="1000" />
+                      </div>
+                      <input type="range" id="me-slider-stocks" min="0" max="2000000" step="5000" class="slider-adjust theme-slider-cyan" />
+                    </div>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="grid-span-12" style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; grid-column: span 2;">
+                    <button type="button" class="btn-modal-cancel" id="btn-money-edit-reset" style="min-height: 40px; padding: 0 1.5rem;">Reset Changes</button>
+                    <button type="submit" class="btn-modal-submit" id="btn-money-edit-submit" style="min-height: 40px; padding: 0 2rem; background: linear-gradient(135deg, var(--violet) 0%, #6d28d9 100%); box-shadow: 0 0 15px rgba(139, 92, 246, 0.35);">Apply All Balances</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <!-- Floating Bottom Navigation Bar (Mobile only, hidden on Desktop) -->
+        <nav class="bottom-nav">
+          <button class="nav-btn active" id="nav-home" data-view="view-home">
+            <i data-lucide="home"></i>
+            <span>Home</span>
+          </button>
+          <button class="nav-btn" id="nav-upload" data-view="view-upload">
+            <i data-lucide="upload-cloud"></i>
+            <span>Upload</span>
+          </button>
+          <button class="nav-btn" id="nav-portfolio" data-view="view-portfolio">
+            <i data-lucide="pie-chart"></i>
+            <span>Portfolio</span>
+          </button>
+          <button class="nav-btn" id="nav-money-edit" data-view="view-money-edit">
+            <i data-lucide="edit-3"></i>
+            <span>Money Edit</span>
+          </button>
+          <button class="nav-btn" id="nav-settings" data-view="view-settings">
+            <i data-lucide="terminal"></i>
+            <span>DevOps</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Modal 1: OTP Secure Verification Connect Portal -->
+    <div class="modal-overlay" id="otp-connect-modal">
+      <div class="modal-box">
+        <h3 class="modal-title">
+          <i data-lucide="shield" style="color: var(--emerald);"></i>
+          <span id="otp-modal-title">Connect Pension Clearinghouse</span>
+        </h3>
+        <p class="modal-desc" id="otp-modal-desc">Secure OTP pull via SMS channel. Read-Only data access.</p>
+        
+        <form id="otp-connect-form" onsubmit="return false;">
+          <div class="form-group" id="otp-phone-group">
+            <label class="form-label" for="otp-phone-input">Mobile Phone Number (טלפון נייד)</label>
+            <input type="tel" id="otp-phone-input" class="form-input" placeholder="e.g. 0541234567" required />
+          </div>
+          <div class="form-group" id="otp-id-group">
+            <label class="form-label" for="otp-id-input">National ID Number (ת.ז.)</label>
+            <input type="text" id="otp-id-input" class="form-input" placeholder="e.g. 312345678" required />
+          </div>
+          <div class="form-group" id="otp-code-group" style="display: none;">
+            <label class="form-label" for="otp-code-input" style="color: var(--emerald); font-weight: 600;">SMS OTP Code (קוד אימות)</label>
+            <input type="text" id="otp-code-input" class="form-input" placeholder="e.g. 8490" />
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-modal-cancel" id="btn-otp-close">Cancel</button>
+            <button type="submit" class="btn-modal-submit" id="btn-otp-submit">Request SMS OTP Code</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal 4: Edit Savings Balances -->
+    <div class="modal-overlay" id="update-savings-modal">
+      <div class="modal-box">
+        <h3 class="modal-title">
+          <i data-lucide="edit-3" style="color: var(--violet);"></i>
+          <span>Update Savings Balances</span>
+        </h3>
+        <p class="modal-desc">Manually adjust your long-term savings balances (Pension & Study Fund).</p>
+        
+        <form id="update-savings-form" onsubmit="return false;">
+          <div class="form-group">
+            <label class="form-label" for="savings-pension">Pension Balance (₪)</label>
+            <input type="number" id="savings-pension" class="form-input" min="0" required />
+          </div>
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label" for="savings-studyfund">Study Fund Balance (קרן השתלמות) (₪)</label>
+            <input type="number" id="savings-studyfund" class="form-input" min="0" required />
+          </div>
+
+          <div class="modal-actions" style="margin-top: 1.5rem;">
+            <button type="button" class="btn-modal-cancel" id="btn-savings-close">Cancel</button>
+            <button type="submit" class="btn-modal-submit" id="btn-savings-submit" style="background: linear-gradient(135deg, var(--violet) 0%, #6d28d9 100%); box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal 2: Add Stock / ETF Ticker -->
+    <div class="modal-overlay" id="add-asset-modal">
+      <div class="modal-box">
+        <h3 class="modal-title">
+          <i data-lucide="pie-chart" style="color: var(--cyan);"></i>
+          <span>Add Stock / ETF Holding</span>
+        </h3>
+        <p class="modal-desc">Type the global ticker symbol. Valuation is calculated via web API quote simulation.</p>
+        
+        <form id="add-asset-form" onsubmit="return false;">
+          <div class="form-group">
+            <label class="form-label" for="asset-ticker">Ticker Symbol (e.g. SPY, PLTR, TSLA)</label>
+            <input type="text" id="asset-ticker" class="form-input" placeholder="e.g. PLTR" style="text-transform: uppercase;" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="asset-shares">Number of Shares</label>
+            <input type="number" id="asset-shares" class="form-input" placeholder="e.g. 25" min="1" step="any" required />
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-modal-cancel" id="btn-asset-close">Cancel</button>
+            <button type="submit" class="btn-modal-submit" id="btn-asset-submit" style="background: linear-gradient(135deg, var(--cyan) 0%, #0891b2 100%); box-shadow: 0 0 12px var(--cyan-glow);">Add to Holdings</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal 3: Add Manual Ledger Record -->
+    <div class="modal-overlay" id="add-tx-modal">
+      <div class="modal-box">
+        <h3 class="modal-title">
+          <i data-lucide="plus" style="color: var(--emerald);"></i>
+          <span>Add Record to Ledger</span>
+        </h3>
+        <p class="modal-desc">Manually append an asset transaction or cashflow adjust line.</p>
+
+        <form id="add-tx-form" onsubmit="return false;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label class="form-label" for="tx-type">Type</label>
+              <select id="tx-type" class="form-input">
+                <option value="INCOME">Income / Gain (+)</option>
+                <option value="EXPENSE">Expense / Cost (-)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="tx-date">Date</label>
+              <input type="date" id="tx-date" class="form-input" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="tx-description">Description</label>
+            <input type="text" id="tx-description" class="form-input" placeholder="e.g. Grocery Store, PLTR dividend" required />
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label class="form-label" for="tx-category">Category</label>
+              <select id="tx-category" class="form-input">
+                <option value="Salary">Salary</option>
+                <option value="Food & Dining">Food & Dining</option>
+                <option value="Utilities">Utilities</option>
+                <option value="Investment">Investment</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Leisure">Leisure</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="tx-source">Source</label>
+              <select id="tx-source" class="form-input">
+                <option value="Manual Entry">Manual Entry</option>
+                <option value="Bank Statement">Bank Statement</option>
+                <option value="Pay Slip">Pay Slip</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="tx-amount">Amount (₪)</label>
+            <input type="number" id="tx-amount" class="form-input" min="1" step="any" placeholder="e.g. 150" required />
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-modal-cancel" id="btn-tx-close">Cancel</button>
+            <button type="submit" class="btn-modal-submit" id="btn-tx-submit">Save Transaction</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Onboarding Modal: Entry Interview -->
+    <div class="modal-overlay onboarding-modal-overlay" id="onboarding-modal">
+      <div class="onboarding-box">
+        <!-- Stepper indicators -->
+        <div class="onboarding-stepper">
+          <div class="step-dot active" data-step="1"></div>
+          <div class="step-dot" data-step="2"></div>
+          <div class="step-dot" data-step="3"></div>
+          <div class="step-dot" data-step="4"></div>
+        </div>
+
+        <div class="onboarding-steps-container">
+          <!-- Step 1: Welcome & Primary Salary -->
+          <div class="onboarding-step active" id="onboarding-step-1">
+            <h2 class="onboarding-title">Welcome to WealthFlow</h2>
+            <p class="onboarding-desc">Let's set up your monthly cash flow. What is your primary net monthly salary (משכורת חודשית נטו)?</p>
+            <div class="form-group" style="margin-top: 1.5rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <label class="form-label" style="margin-bottom: 0;">Net Salary (₪)</label>
+                <input type="number" id="ob-input-salary" class="adjust-num-input" value="15000" min="2000" max="100000" style="margin-top: 0;" />
+              </div>
+              <input type="range" id="ob-slider-salary" min="2000" max="100000" step="500" value="15000" class="slider-adjust theme-slider-emerald" />
+            </div>
+            <div class="onboarding-navigation" style="margin-top: 2rem;">
+              <div></div>
+              <button class="btn-modal-submit ob-btn-next" data-next="2">Next Step</button>
+            </div>
+          </div>
+
+          <!-- Step 2: Other Incomes -->
+          <div class="onboarding-step" id="onboarding-step-2">
+            <h2 class="onboarding-title">Other Incomes</h2>
+            <p class="onboarding-desc">Do you have other recurring monthly incomes? (e.g. rent, freelance, allowances)</p>
+            
+            <div class="ob-income-builder" style="margin-top: 1rem;">
+              <div class="ob-income-form" style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 0.5rem; margin-bottom: 1rem;">
+                <input type="text" id="ob-income-desc" class="form-input" placeholder="e.g. Freelance work" style="margin-top: 0;" />
+                <input type="number" id="ob-income-amount" class="form-input" placeholder="Amount (₪)" style="margin-top: 0;" />
+                <button type="button" class="btn-sync" id="ob-btn-add-income" style="padding: 0 0.75rem; min-height: 38px;">Add</button>
+              </div>
+              
+              <div class="ob-income-list" id="ob-income-list-container" style="max-height: 150px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px; padding: 0.5rem;">
+                <div class="empty-list-text" style="color: var(--text-muted); font-size: 0.75rem; text-align: center; padding: 0.5rem;">No additional incomes added yet.</div>
+              </div>
+            </div>
+
+            <div class="onboarding-navigation" style="margin-top: 1.5rem;">
+              <button class="btn-modal-cancel ob-btn-prev" data-prev="1">Back</button>
+              <button class="btn-modal-submit ob-btn-next" data-next="3">Next Step</button>
+            </div>
+          </div>
+
+          <!-- Step 3: Starting Balances -->
+          <div class="onboarding-step" id="onboarding-step-3">
+            <h2 class="onboarding-title">Starting Balances</h2>
+            <p class="onboarding-desc">Help us initialize your ledger. What are your starting balances today?</p>
+            
+            <div class="form-group" style="margin-top: 1rem;">
+              <label class="form-label" for="ob-input-cash">Initial Liquid Cash (עובר ושב)</label>
+              <input type="number" id="ob-input-cash" class="form-input" value="0" min="0" required />
+            </div>
+
+            <div class="form-group" style="margin-top: 1rem;">
+              <label class="form-label" for="ob-input-card">Outstanding Credit Card Balance (חוב כרטיס אשראי)</label>
+              <input type="number" id="ob-input-card" class="form-input" value="0" min="0" required />
+            </div>
+
+            <div class="form-group" style="margin-top: 1rem;">
+              <label class="form-label" for="ob-input-pension">Starting Pension Balance (יתרת פנסיה)</label>
+              <input type="number" id="ob-input-pension" class="form-input" value="0" min="0" required />
+            </div>
+
+            <div class="form-group" style="margin-top: 1rem;">
+              <label class="form-label" for="ob-input-studyfund">Starting Study Fund Balance (קרן השתלמות)</label>
+              <input type="number" id="ob-input-studyfund" class="form-input" value="0" min="0" required />
+            </div>
+
+            <div class="onboarding-navigation" style="margin-top: 1.5rem;">
+              <button class="btn-modal-cancel ob-btn-prev" data-prev="2">Back</button>
+              <button class="btn-modal-submit ob-btn-next" data-next="4">Summary</button>
+            </div>
+          </div>
+
+          <!-- Step 4: Summary & Confirm -->
+          <div class="onboarding-step" id="onboarding-step-4">
+            <h2 class="onboarding-title">Ready to Flow!</h2>
+            <p class="onboarding-desc">Here is a summary of your configuration. Confirm to customize your dashboard:</p>
+            
+            <div class="ob-summary-card" style="margin-top: 1rem; border: 1px solid var(--border-color); border-radius: 6px; padding: 1rem; background: rgba(255,255,255,0.02);">
+              <div class="metric-row" style="margin-bottom: 0.5rem;">
+                <span class="metric-label">Monthly Salary</span>
+                <span class="metric-value" id="ob-sum-salary" style="font-weight: 700; color: var(--emerald);">₪15,000</span>
+              </div>
+              <div class="metric-row" style="margin-bottom: 0.5rem;">
+                <span class="metric-label">Other Monthly Incomes</span>
+                <span class="metric-value" id="ob-sum-extra" style="font-weight: 700;">₪0</span>
+              </div>
+              <div class="metric-row" style="margin-bottom: 0.5rem;">
+                <span class="metric-label">Initial Cash</span>
+                <span class="metric-value" id="ob-sum-cash" style="font-weight: 700; color: var(--cyan);">₪0</span>
+              </div>
+              <div class="metric-row" style="margin-bottom: 0.5rem;">
+                <span class="metric-label">Credit Card Debt</span>
+                <span class="metric-value" id="ob-sum-debt" style="font-weight: 700; color: var(--coral);">₪0</span>
+              </div>
+              <div class="metric-row" style="margin-bottom: 0.5rem;">
+                <span class="metric-label">Pension Balance</span>
+                <span class="metric-value" id="ob-sum-pension" style="font-weight: 700; color: var(--violet);">₪0</span>
+              </div>
+              <div class="metric-row" style="margin-bottom: 0.5rem;">
+                <span class="metric-label">Study Fund Balance</span>
+                <span class="metric-value" id="ob-sum-studyfund" style="font-weight: 700; color: var(--violet);">₪0</span>
+              </div>
+            </div>
+
+            <div class="onboarding-navigation" style="margin-top: 1.5rem;">
+              <button class="btn-modal-cancel ob-btn-prev" data-prev="3">Back</button>
+              <button class="btn-modal-submit" id="ob-btn-finish" style="background: linear-gradient(135deg, var(--emerald) 0%, #047857 100%);">Complete & Launch</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- main.js Script -->
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>
