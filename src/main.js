@@ -35,6 +35,18 @@ const elStudyFundVal = document.getElementById('study-fund-val');
 const elStocksVal = document.getElementById('stocks-val');
 const elCreditOutstanding = document.getElementById('credit-outstanding-val');
 
+// Dashboard new element refs
+const elDashLiquid    = document.getElementById('dash-liquid');
+const elDashStocks    = document.getElementById('dash-stocks');
+const elDashPension   = document.getElementById('dash-pension');
+const elDashKeren     = document.getElementById('dash-keren');
+const elDashCreditSub = document.getElementById('dash-credit-sub');
+const elDashStocksGain = document.getElementById('dash-stocks-gain');
+const elDashIncome    = document.getElementById('dash-month-income');
+const elDashExpenses  = document.getElementById('dash-month-expenses');
+const elDashNet       = document.getElementById('dash-month-net');
+const elCreditLedger  = document.getElementById('credit-val-ledger');
+
 // Helper to format currency
 function formatCurrency(val) {
   return '₪' + Math.round(val).toLocaleString('en-US');
@@ -132,7 +144,38 @@ function updateUIBalances(animate = false) {
     elStocksVal.textContent = formatCurrency(state.balances.stocks);
   }
 
-  elCreditOutstanding.textContent = formatCurrency(state.creditOutstanding);
+  if (elCreditOutstanding) elCreditOutstanding.textContent = formatCurrency(state.creditOutstanding);
+  if (elCreditLedger) elCreditLedger.textContent = formatCurrency(state.creditOutstanding);
+
+  // Dashboard summary cards
+  if (elDashLiquid)  elDashLiquid.textContent  = formatCurrency(state.balances.liquid);
+  if (elDashStocks)  elDashStocks.textContent  = formatCurrency(calculateStocksBalance());
+  if (elDashPension) elDashPension.textContent = formatCurrency(state.balances.pension);
+  if (elDashKeren)   elDashKeren.textContent   = formatCurrency(state.balances.studyFund);
+  if (elDashCreditSub) elDashCreditSub.textContent = state.creditOutstanding > 0 ? `-${formatCurrency(state.creditOutstanding)} debt` : '';
+
+  // Monthly stats from transactions
+  const monthStr = new Date().toISOString().slice(0, 7);
+  let monthIncome = 0, monthExpenses = 0;
+  state.transactions.forEach(tx => {
+    if (!tx.date.startsWith(monthStr)) return;
+    if (tx.type === 'INCOME') monthIncome += tx.amount;
+    else monthExpenses += tx.amount;
+  });
+  const monthNet = monthIncome - monthExpenses;
+  if (elDashIncome)   elDashIncome.textContent   = formatCurrency(monthIncome);
+  if (elDashExpenses) elDashExpenses.textContent = formatCurrency(monthExpenses);
+  if (elDashNet) {
+    elDashNet.textContent = (monthNet >= 0 ? '+' : '') + formatCurrency(Math.abs(monthNet));
+    elDashNet.style.color = monthNet >= 0 ? 'var(--emerald)' : 'var(--coral)';
+  }
+
+  // Ledger stats
+  updateLedgerStats();
+
+  // Allocation donut
+  updateAllocationDonut();
+
   updatePensionProjections();
   updateManualSliderInputs();
 }
@@ -1745,6 +1788,76 @@ function setupQuickBankEntry() {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ─── Dashboard: Allocation Donut ─────────────────────────────────────────────
+
+let allocationDonut = null;
+
+function initAllocationDonut() {
+  const el = document.querySelector('#allocation-donut');
+  if (!el) return;
+
+  const options = {
+    series: [1, 1, 1, 1],
+    chart: { type: 'donut', height: 160, foreColor: '#8b949e', animations: { enabled: true, speed: 400 } },
+    labels: ['Cash', 'Stocks', 'Pension', 'Keren'],
+    colors: ['#10b981', '#06b6d4', '#8b5cf6', '#f59e0b'],
+    stroke: { show: true, colors: ['#0d1117'], width: 2 },
+    plotOptions: {
+      pie: {
+        donut: {
+          size: '68%',
+          labels: {
+            show: true,
+            total: {
+              show: true,
+              label: 'Net Worth',
+              color: '#8b949e',
+              fontSize: '9px',
+              formatter: () => formatCurrency(getNetWorth())
+            }
+          }
+        }
+      }
+    },
+    dataLabels: { enabled: false },
+    legend: { show: false },
+    tooltip: { theme: 'dark', y: { formatter: (v) => formatCurrency(v) } }
+  };
+
+  allocationDonut = new ApexCharts(el, options);
+  allocationDonut.render();
+}
+
+function updateAllocationDonut() {
+  if (!allocationDonut) return;
+  const liquid  = Math.max(state.balances.liquid, 0);
+  const stocks  = Math.max(calculateStocksBalance(), 0);
+  const pension = Math.max(state.balances.pension, 0);
+  const keren   = Math.max(state.balances.studyFund, 0);
+  const total   = liquid + stocks + pension + keren || 1;
+  allocationDonut.updateSeries([
+    liquid  || 0.001,
+    stocks  || 0.001,
+    pension || 0.001,
+    keren   || 0.001
+  ]);
+}
+
+// ─── Ledger Stats Bar ─────────────────────────────────────────────────────────
+
+function updateLedgerStats() {
+  const totalIncome   = state.transactions.filter(t => t.type === 'INCOME').reduce((s, t) => s + t.amount, 0);
+  const totalExpenses = state.transactions.filter(t => t.type !== 'INCOME').reduce((s, t) => s + t.amount, 0);
+  const elInc  = document.getElementById('ledger-total-income');
+  const elExp  = document.getElementById('ledger-total-expenses');
+  const elCount = document.getElementById('ledger-tx-count');
+  if (elInc)   elInc.textContent   = formatCurrency(totalIncome);
+  if (elExp)   elExp.textContent   = formatCurrency(totalExpenses);
+  if (elCount) elCount.textContent = state.transactions.length;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 // ─── Pay Slip Allocation Service ─────────────────────────────────────────────
 
 function handleMonthlyPaySlipAllocation(data) {
@@ -1820,6 +1933,7 @@ function initApp() {
   
   initSparkline();
   initDonutChart();
+  initAllocationDonut();
 
   setupNavigation();
   setupSubTabs();

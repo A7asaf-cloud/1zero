@@ -1967,3 +1967,169 @@ body {
   text-overflow: ellipsis;
   max-width: 65%;
 }
+
+/* ── Dashboard: Allocation Layout ────────────────────────────────────────────── */
+.dashboard-allocation-layout {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.dash-asset-cards {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+}
+
+.dash-card {
+  border-radius: 12px;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--border-color);
+  background: rgba(255,255,255,0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.dash-card-emerald { border-color: rgba(16,185,129,0.25);  background: rgba(16,185,129,0.05); }
+.dash-card-cyan    { border-color: rgba(6,182,212,0.25);   background: rgba(6,182,212,0.05); }
+.dash-card-violet  { border-color: rgba(139,92,246,0.25);  background: rgba(139,92,246,0.05); }
+.dash-card-amber   { border-color: rgba(245,158,11,0.25);  background: rgba(245,158,11,0.05); }
+
+.dash-card-label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.dash-card-label i, .dash-card-label svg { width: 11px; height: 11px; }
+.dash-card-emerald .dash-card-label { color: var(--emerald); }
+.dash-card-cyan    .dash-card-label { color: var(--cyan); }
+.dash-card-violet  .dash-card-label { color: var(--violet); }
+.dash-card-amber   .dash-card-label { color: #f59e0b; }
+
+.dash-card-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+.dash-card-emerald .dash-card-value { color: var(--emerald); }
+.dash-card-cyan    .dash-card-value { color: var(--cyan); }
+.dash-card-violet  .dash-card-value { color: var(--violet); }
+.dash-card-amber   .dash-card-value { color: #f59e0b; }
+
+.dash-card-sub {
+  font-size: 0.65rem;
+  min-height: 0.8rem;
+}
+
+/* ── Dashboard: Monthly Summary ─────────────────────────────────────────────── */
+.monthly-summary-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.monthly-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  text-align: center;
+}
+
+.monthly-stat-label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.monthly-stat-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.monthly-stat-value.emerald { color: var(--emerald); }
+.monthly-stat-value.coral   { color: var(--coral); }
+
+.monthly-stat-divider {
+  width: 1px;
+  height: 32px;
+  background: var(--border-color);
+  flex-shrink: 0;
+}
+
+/* ── Transactions View: Ledger Stats ─────────────────────────────────────────── */
+.ledger-stats-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.ledger-stat {
+  flex: 1;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.ledger-stat-label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ledger-stat-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.ledger-stat-value.emerald { color: var(--emerald); }
+.ledger-stat-value.coral   { color: var(--coral); }
+
+.ledger-mobile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Responsive: stack donut above cards on very small screens */
+@media (max-width: 420px) {
+  .dashboard-allocation-layout {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  #allocation-donut {
+    width: 100% !important;
+    min-height: 140px !important;
+  }
+  .dash-asset-cards {
+    grid-template-columns: 1fr 1fr;
+  }
+  .dash-card-value {
+    font-size: 0.9rem;
+  }
+  .monthly-summary-row {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .monthly-stat {
+    min-width: calc(50% - 0.25rem);
+  }
+  .monthly-stat-divider {
+    display: none;
+  }
+}

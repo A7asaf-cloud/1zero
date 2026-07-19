@@ -10,8 +10,8 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script type="module" crossorigin src="/1zero/assets/index-QOppjKhg.js"></script>
-    <link rel="stylesheet" crossorigin href="/1zero/assets/index-D8ztiXn9.css">
+    <script type="module" crossorigin src="/1zero/assets/index-BhBG-F6n.js"></script>
+    <link rel="stylesheet" crossorigin href="/1zero/assets/index-BJtp5Tns.css">
   <link rel="manifest" href="/1zero/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/1zero/registerSW.js"></script></head>
   <body>
     <!-- Adaptive App Shell (Combines Desktop Sidebar and Mobile layouts) -->
@@ -31,32 +31,32 @@
             <ul class="nav-list">
               <li>
                 <button class="nav-link active" data-view="view-home">
-                  <i data-lucide="home"></i>
-                  <span>Home Overview</span>
+                  <i data-lucide="layout-dashboard"></i>
+                  <span>Dashboard</span>
+                </button>
+              </li>
+              <li>
+                <button class="nav-link" data-view="view-portfolio">
+                  <i data-lucide="layers"></i>
+                  <span>My Assets</span>
+                </button>
+              </li>
+              <li>
+                <button class="nav-link" data-view="view-money-edit">
+                  <i data-lucide="list"></i>
+                  <span>Transactions</span>
                 </button>
               </li>
               <li>
                 <button class="nav-link" data-view="view-upload">
                   <i data-lucide="upload-cloud"></i>
-                  <span>Upload & Connect</span>
-                </button>
-              </li>
-              <li>
-                <button class="nav-link" data-view="view-portfolio">
-                  <i data-lucide="pie-chart"></i>
-                  <span>My Portfolios</span>
-                </button>
-              </li>
-              <li>
-                <button class="nav-link" data-view="view-money-edit">
-                  <i data-lucide="edit-3"></i>
-                  <span>Money Edit</span>
+                  <span>Import Data</span>
                 </button>
               </li>
               <li>
                 <button class="nav-link" data-view="view-settings">
-                  <i data-lucide="terminal"></i>
-                  <span>Developer DevOps</span>
+                  <i data-lucide="settings"></i>
+                  <span>Settings</span>
                 </button>
               </li>
             </ul>
@@ -94,11 +94,12 @@
 
         <!-- Viewport Contents -->
         <main class="views-viewport">
-          
-          <!-- View 1: Home View (Overview metrics, liquid assets, cashflow list/table) -->
+
+          <!-- View 1: Dashboard -->
           <section class="app-view active-view" id="view-home">
             <div class="view-grid-layout">
-              <!-- Net Worth Header widget (Large card) -->
+
+              <!-- Net Worth Hero widget -->
               <div class="header-widget grid-span-8">
                 <div class="networth-info">
                   <span class="networth-label">Total Net Worth</span>
@@ -110,7 +111,7 @@
                     </span>
                   </div>
                 </div>
-                
+
                 <div class="header-chart-sync">
                   <div class="sparkline-container" id="net-worth-sparkline"></div>
                   <button class="btn-sync" id="btn-sync" aria-label="Sync offline balances">
@@ -120,86 +121,280 @@
                 </div>
               </div>
 
-              <!-- Liquid Assets Card (Sits next to Net Worth on Desktop) -->
-              <div class="panel theme-emerald grid-span-4">
+              <!-- Asset Allocation: Donut + 4 mini cards -->
+              <div class="panel theme-emerald grid-span-12">
                 <div class="panel-header">
-                  <h3 class="panel-title">
-                    <i data-lucide="credit-card"></i>
-                    <span>Liquid Balance</span>
-                  </h3>
-                  <span class="badge badge-income">Active</span>
+                  <h3 class="panel-title"><i data-lucide="pie-chart"></i><span>Asset Allocation</span></h3>
+                  <span class="badge badge-source">Live</span>
                 </div>
-                <div class="asset-primary-val" id="liquid-val">₪0</div>
-                <div class="asset-metrics">
-                  <div class="metric-row">
-                    <span class="metric-label">Credit Card Balance</span>
-                    <span class="metric-value" style="color: var(--coral);" id="credit-outstanding-val">₪0</span>
-                  </div>
-                  <div class="metric-row">
-                    <span class="metric-label">Billing Cycle Ends</span>
-                    <span class="metric-value" id="billing-cycle-date">10/08/2026</span>
+                <div class="dashboard-allocation-layout">
+                  <!-- Left: donut chart -->
+                  <div id="allocation-donut" style="min-height:160px; width:160px; flex-shrink:0;"></div>
+                  <!-- Right: 4 mini cards in 2x2 grid -->
+                  <div class="dash-asset-cards">
+                    <div class="dash-card dash-card-emerald">
+                      <div class="dash-card-label"><i data-lucide="landmark"></i> Cash</div>
+                      <div class="dash-card-value" id="dash-liquid">₪0</div>
+                      <div class="dash-card-sub" id="dash-credit-sub" style="color:var(--coral)"></div>
+                    </div>
+                    <div class="dash-card dash-card-cyan">
+                      <div class="dash-card-label"><i data-lucide="trending-up"></i> Stocks</div>
+                      <div class="dash-card-value" id="dash-stocks">₪0</div>
+                      <div class="dash-card-sub" id="dash-stocks-gain" style="color:var(--emerald)"></div>
+                    </div>
+                    <div class="dash-card dash-card-violet">
+                      <div class="dash-card-label"><i data-lucide="shield-check"></i> Pension</div>
+                      <div class="dash-card-value" id="dash-pension">₪0</div>
+                      <div class="dash-card-sub" style="color:var(--text-muted)">Long-term</div>
+                    </div>
+                    <div class="dash-card dash-card-amber">
+                      <div class="dash-card-label"><i data-lucide="book-open"></i> Keren</div>
+                      <div class="dash-card-value" id="dash-keren">₪0</div>
+                      <div class="dash-card-sub" style="color:var(--text-muted)">Study Fund</div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <!-- Cashflow Ledger Panel (Spans full width, adaptive representation) -->
+              <!-- Monthly Summary Row -->
               <div class="panel theme-coral grid-span-12">
                 <div class="panel-header">
+                  <h3 class="panel-title"><i data-lucide="bar-chart-2"></i><span>This Month</span></h3>
+                </div>
+                <div class="monthly-summary-row">
+                  <div class="monthly-stat">
+                    <span class="monthly-stat-label">Income</span>
+                    <span class="monthly-stat-value emerald" id="dash-month-income">₪0</span>
+                  </div>
+                  <div class="monthly-stat-divider"></div>
+                  <div class="monthly-stat">
+                    <span class="monthly-stat-label">Expenses</span>
+                    <span class="monthly-stat-value coral" id="dash-month-expenses">₪0</span>
+                  </div>
+                  <div class="monthly-stat-divider"></div>
+                  <div class="monthly-stat">
+                    <span class="monthly-stat-label">Net</span>
+                    <span class="monthly-stat-value" id="dash-month-net">₪0</span>
+                  </div>
+                  <div class="monthly-stat-divider"></div>
+                  <div class="monthly-stat">
+                    <span class="monthly-stat-label">Credit Debt</span>
+                    <span class="monthly-stat-value coral" id="credit-outstanding-val">₪0</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- View 2: My Assets -->
+          <section class="app-view" id="view-portfolio">
+            <div class="view-grid-layout">
+              <!-- Long-Term Savings Card -->
+              <div class="panel theme-violet grid-span-6">
+                <div class="panel-header">
                   <h3 class="panel-title">
-                    <i data-lucide="file-text"></i>
-                    <span>Recent Cashflow Ledger</span>
+                    <i data-lucide="calculator"></i>
+                    <span>Long-Term Savings</span>
                   </h3>
-                  <button class="btn-add-tx" id="btn-open-tx-modal" aria-label="Add transaction manually">
-                    <i data-lucide="plus"></i>
-                    <span>Add Record</span>
+                  <span id="savings-val" class="asset-primary-val" style="font-size: 1.75rem; margin-bottom: 0;">₪0</span>
+                </div>
+
+                <div class="asset-secondary-val" style="margin-bottom: 0.25rem; margin-top: 0.25rem; display: flex; justify-content: flex-end; align-items: center;">
+                  <button class="btn-add-tx" id="btn-open-savings-modal" style="padding: 0.25rem 0.65rem; min-height: 28px; font-size: 0.7rem; background-color: var(--violet); border-color: var(--violet);">
+                    <i data-lucide="edit-3"></i>
+                    <span>Edit Savings</span>
                   </button>
                 </div>
 
-                <!-- Filters toolbar -->
+                <div class="asset-metrics" style="margin-top: 0.5rem; padding-top: 0.5rem;">
+                  <div class="metric-row">
+                    <span class="metric-label">Pension Balance</span>
+                    <span class="metric-value" id="pension-balance-val">₪0</span>
+                  </div>
+                  <div class="metric-row">
+                    <span class="metric-label">Study Fund (קרן השתלמות)</span>
+                    <span class="metric-value" id="study-fund-val">₪0</span>
+                  </div>
+                </div>
+
+                <!-- Projections compound calculator -->
+                <div class="pension-chart-container" style="margin-top: 0.5rem;">
+                  <div class="metric-row" style="margin-bottom: 0.25rem;">
+                    <span class="metric-label" style="font-size: 0.75rem; color: var(--violet); font-weight:600; text-transform:uppercase;">Retirement Age 67:</span>
+                    <span class="metric-value" style="color: var(--violet); font-size: 1rem; font-weight:700;" id="projection-result">₪0</span>
+                  </div>
+                  <div class="projections-slider-container">
+                    <div class="slider-labels">
+                      <span>Contrib: ₪2,200/mo</span>
+                      <span id="slider-years-label">Years left: 25</span>
+                    </div>
+                    <input type="range" id="years-slider" min="5" max="45" value="25" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Stock Portfolio Card with Tickers and Donut Allocation -->
+              <div class="panel theme-cyan grid-span-6">
+                <div class="panel-header">
+                  <h3 class="panel-title">
+                    <i data-lucide="pie-chart"></i>
+                    <span>Stock Portfolio holdings</span>
+                  </h3>
+                  <span id="stocks-val" class="asset-primary-val" style="font-size: 1.75rem; margin-bottom: 0;">₪0</span>
+                </div>
+
+                <div class="asset-secondary-val" style="margin-bottom: 0.25rem; margin-top: 0.25rem; display: flex; justify-content: space-between; align-items: center;">
+                  <span id="stocks-daily-gain" style="color: var(--emerald); font-weight: 600; font-size: 0.8rem;">₪0 (0.00%) Today</span>
+                  <button class="btn-add-tx" id="btn-open-asset-modal" style="padding: 0.25rem 0.65rem; min-height: 28px; font-size: 0.7rem;">
+                    <i data-lucide="plus"></i>
+                    <span>Add Asset</span>
+                  </button>
+                </div>
+
+                <!-- Holdings List of assets -->
+                <div class="stock-holdings-list-wrapper">
+                  <div class="stock-holdings-header">
+                    <span>Ticker</span>
+                    <span>Shares</span>
+                    <span style="text-align: right;">Current Value</span>
+                  </div>
+                  <div id="stocks-holdings-list">
+                    <!-- JS injected asset rows -->
+                  </div>
+                </div>
+
+                <!-- Allocation donut chart -->
+                <div id="stock-donut-chart" style="min-height: 140px; margin-top: 0.5rem;"></div>
+              </div>
+
+              <!-- Manual Balances Adjustments Panel -->
+              <div class="panel theme-violet grid-span-12">
+                <div class="panel-header" style="margin-bottom: 0.75rem;">
+                  <h3 class="panel-title">
+                    <i data-lucide="sliders"></i>
+                    <span>Adjust Balances Manually</span>
+                  </h3>
+                  <span class="badge badge-source">Manual Overrides</span>
+                </div>
+
+                <div class="manual-adjustments-container">
+                  <!-- Pension Slider -->
+                  <div class="adjust-control-group">
+                    <div class="adjust-label-row">
+                      <span class="adjust-title">Pension Balance</span>
+                      <input type="number" id="input-pension" class="adjust-num-input" value="0" step="1000" />
+                    </div>
+                    <input type="range" id="slider-pension" min="0" max="2000000" step="5000" value="0" class="slider-adjust theme-slider-violet" />
+                  </div>
+
+                  <!-- Study Fund Slider -->
+                  <div class="adjust-control-group">
+                    <div class="adjust-label-row">
+                      <span class="adjust-title">Study Fund Balance</span>
+                      <input type="number" id="input-studyfund" class="adjust-num-input" value="0" step="1000" />
+                    </div>
+                    <input type="range" id="slider-studyfund" min="0" max="800000" step="5000" value="0" class="slider-adjust theme-slider-violet" />
+                  </div>
+
+                  <!-- Stock Portfolio Slider -->
+                  <div class="adjust-control-group">
+                    <div class="adjust-label-row">
+                      <span class="adjust-title">Stock Portfolio</span>
+                      <input type="number" id="input-stocks" class="adjust-num-input" value="0" step="1000" />
+                    </div>
+                    <input type="range" id="slider-stocks" min="0" max="1500000" step="5000" value="0" class="slider-adjust theme-slider-cyan" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- View 3: Transactions -->
+          <section class="app-view" id="view-money-edit">
+            <div class="view-grid-layout">
+
+              <!-- Transaction Ledger Panel -->
+              <div class="panel theme-coral grid-span-12">
+                <div class="panel-header">
+                  <h3 class="panel-title"><i data-lucide="list"></i><span>Transaction Ledger</span></h3>
+                  <button class="btn-add-tx" id="btn-open-tx-modal">
+                    <i data-lucide="plus"></i><span>Add</span>
+                  </button>
+                </div>
+
+                <!-- Stats row -->
+                <div class="ledger-stats-row">
+                  <div class="ledger-stat">
+                    <span class="ledger-stat-label">Total Income</span>
+                    <span class="ledger-stat-value emerald" id="ledger-total-income">₪0</span>
+                  </div>
+                  <div class="ledger-stat">
+                    <span class="ledger-stat-label">Total Expenses</span>
+                    <span class="ledger-stat-value coral" id="ledger-total-expenses">₪0</span>
+                  </div>
+                  <div class="ledger-stat">
+                    <span class="ledger-stat-label">Transactions</span>
+                    <span class="ledger-stat-value" id="ledger-tx-count">0</span>
+                  </div>
+                </div>
+
+                <!-- Filters -->
                 <div class="mobile-filter-row">
                   <div class="search-container">
                     <i data-lucide="search" class="search-icon"></i>
-                    <input type="text" id="ledger-search" class="search-input" placeholder="Search cashflow..." />
+                    <input type="text" id="ledger-search" class="search-input" placeholder="Search transactions..." />
                   </div>
                   <select id="ledger-filter-category" class="filter-select">
-                    <option value="ALL">All Categories</option>
+                    <option value="ALL">All</option>
                     <option value="Salary">Salary</option>
                     <option value="Food & Dining">Food & Dining</option>
                     <option value="Utilities">Utilities</option>
                     <option value="Investment">Investment</option>
                     <option value="Shopping">Shopping</option>
                     <option value="Leisure">Leisure</option>
+                    <option value="Expense">Expense</option>
                   </select>
                 </div>
 
-                <!-- 1. Mobile Representation (Touch-friendly Swipe List, hidden on Desktop) -->
-                <div class="mobile-only transactions-list-container" id="ledger-list">
-                  <!-- JS Injected vertical swipe rows -->
-                </div>
+                <!-- Mobile List -->
+                <div id="ledger-list" class="ledger-mobile-list"></div>
 
-                <!-- 2. Desktop Representation (Structured Grid Table, hidden on Mobile) -->
-                <div class="desktop-only ledger-table-container">
+                <!-- Desktop Table -->
+                <div class="ledger-table-wrapper desktop-only">
                   <table class="ledger-table">
                     <thead>
                       <tr>
-                        <th>Date</th>
-                        <th>Description</th>
-                        <th>Category</th>
-                        <th>Source</th>
-                        <th>Amount</th>
-                        <th style="width: 50px; text-align: center;">Action</th>
+                        <th>Date</th><th>Description</th><th>Category</th><th>Source</th><th>Amount</th><th></th>
                       </tr>
                     </thead>
-                    <tbody id="ledger-table-body">
-                      <!-- JS Injected table rows -->
-                    </tbody>
+                    <tbody id="ledger-table-body"></tbody>
                   </table>
                 </div>
               </div>
+
+              <!-- Cash & Banking Panel -->
+              <div class="panel theme-emerald grid-span-12">
+                <div class="panel-header">
+                  <h3 class="panel-title"><i data-lucide="landmark"></i><span>Cash & Banking</span></h3>
+                  <button class="btn-add-tx" id="btn-open-savings-modal-2" style="display:none"></button>
+                </div>
+                <div class="asset-metrics">
+                  <div class="metric-row">
+                    <span class="metric-label">Liquid Balance</span>
+                    <span class="metric-value" id="liquid-val" style="color:var(--emerald); font-size:1.2rem; font-weight:700;">₪0</span>
+                  </div>
+                  <div class="metric-row">
+                    <span class="metric-label">Credit Outstanding</span>
+                    <span class="metric-value" style="color:var(--coral);" id="credit-val-ledger">₪0</span>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </section>
 
-          <!-- View 2: Upload View (Connect Portals and document file uploads) -->
+          <!-- View 4: Import Data -->
           <section class="app-view" id="view-upload">
             <div class="panel theme-emerald">
               <div class="panel-header" style="margin-bottom: 0.5rem;">
@@ -434,180 +629,20 @@
             </div>
           </section>
 
-          <!-- View 3: Portfolio View (Long term projections, Stock holding simulation) -->
-          <section class="app-view" id="view-portfolio">
+          <!-- View 5: Settings -->
+          <section class="app-view" id="view-settings">
             <div class="view-grid-layout">
-              <!-- Long-Term Savings Card -->
-              <div class="panel theme-violet grid-span-6">
-                <div class="panel-header">
-                  <h3 class="panel-title">
-                    <i data-lucide="calculator"></i>
-                    <span>Long-Term Savings</span>
-                  </h3>
-                  <span id="savings-val" class="asset-primary-val" style="font-size: 1.75rem; margin-bottom: 0;">₪0</span>
-                </div>
-                
-                <div class="asset-secondary-val" style="margin-bottom: 0.25rem; margin-top: 0.25rem; display: flex; justify-content: flex-end; align-items: center;">
-                  <button class="btn-add-tx" id="btn-open-savings-modal" style="padding: 0.25rem 0.65rem; min-height: 28px; font-size: 0.7rem; background-color: var(--violet); border-color: var(--violet);">
-                    <i data-lucide="edit-3"></i>
-                    <span>Edit Savings</span>
-                  </button>
-                </div>
-                
-                <div class="asset-metrics" style="margin-top: 0.5rem; padding-top: 0.5rem;">
-                  <div class="metric-row">
-                    <span class="metric-label">Pension Balance</span>
-                    <span class="metric-value" id="pension-balance-val">₪0</span>
-                  </div>
-                  <div class="metric-row">
-                    <span class="metric-label">Study Fund (קרן השתלמות)</span>
-                    <span class="metric-value" id="study-fund-val">₪0</span>
-                  </div>
-                </div>
 
-                <!-- Projections compound calculator -->
-                <div class="pension-chart-container" style="margin-top: 0.5rem;">
-                  <div class="metric-row" style="margin-bottom: 0.25rem;">
-                    <span class="metric-label" style="font-size: 0.75rem; color: var(--violet); font-weight:600; text-transform:uppercase;">Retirement Age 67:</span>
-                    <span class="metric-value" style="color: var(--violet); font-size: 1rem; font-weight:700;" id="projection-result">₪0</span>
-                  </div>
-                  <div class="projections-slider-container">
-                    <div class="slider-labels">
-                      <span>Contrib: ₪2,200/mo</span>
-                      <span id="slider-years-label">Years left: 25</span>
-                    </div>
-                    <input type="range" id="years-slider" min="5" max="45" value="25" />
-                  </div>
-                </div>
-              </div>
-
-              <!-- Stock Portfolio Card with Tickers and Donut Allocation -->
-              <div class="panel theme-cyan grid-span-6">
-                <div class="panel-header">
-                  <h3 class="panel-title">
-                    <i data-lucide="pie-chart"></i>
-                    <span>Stock Portfolio holdings</span>
-                  </h3>
-                  <span id="stocks-val" class="asset-primary-val" style="font-size: 1.75rem; margin-bottom: 0;">₪0</span>
-                </div>
-                
-                <div class="asset-secondary-val" style="margin-bottom: 0.25rem; margin-top: 0.25rem; display: flex; justify-content: space-between; align-items: center;">
-                  <span id="stocks-daily-gain" style="color: var(--emerald); font-weight: 600; font-size: 0.8rem;">₪0 (0.00%) Today</span>
-                  <button class="btn-add-tx" id="btn-open-asset-modal" style="padding: 0.25rem 0.65rem; min-height: 28px; font-size: 0.7rem;">
-                    <i data-lucide="plus"></i>
-                    <span>Add Asset</span>
-                  </button>
-                </div>
-
-                <!-- Holdings List of assets -->
-                <div class="stock-holdings-list-wrapper">
-                  <div class="stock-holdings-header">
-                    <span>Ticker</span>
-                    <span>Shares</span>
-                    <span style="text-align: right;">Current Value</span>
-                  </div>
-                  <div id="stocks-holdings-list">
-                    <!-- JS injected asset rows -->
-                  </div>
-                </div>
-                
-                <!-- Allocation donut chart -->
-                <div id="stock-donut-chart" style="min-height: 140px; margin-top: 0.5rem;"></div>
-              </div>
-
-              <!-- Manual Balances Adjustments Panel -->
+              <!-- Panel 1: Manual Balance Override -->
               <div class="panel theme-violet grid-span-12">
-                <div class="panel-header" style="margin-bottom: 0.75rem;">
+                <div class="panel-header">
                   <h3 class="panel-title">
                     <i data-lucide="sliders"></i>
-                    <span>Adjust Balances Manually</span>
-                  </h3>
-                  <span class="badge badge-source">Manual Overrides</span>
-                </div>
-                
-                <div class="manual-adjustments-container">
-                  <!-- Pension Slider -->
-                  <div class="adjust-control-group">
-                    <div class="adjust-label-row">
-                      <span class="adjust-title">Pension Balance</span>
-                      <input type="number" id="input-pension" class="adjust-num-input" value="0" step="1000" />
-                    </div>
-                    <input type="range" id="slider-pension" min="0" max="2000000" step="5000" value="0" class="slider-adjust theme-slider-violet" />
-                  </div>
-
-                  <!-- Study Fund Slider -->
-                  <div class="adjust-control-group">
-                    <div class="adjust-label-row">
-                      <span class="adjust-title">Study Fund Balance</span>
-                      <input type="number" id="input-studyfund" class="adjust-num-input" value="0" step="1000" />
-                    </div>
-                    <input type="range" id="slider-studyfund" min="0" max="800000" step="5000" value="0" class="slider-adjust theme-slider-violet" />
-                  </div>
-
-                  <!-- Stock Portfolio Slider -->
-                  <div class="adjust-control-group">
-                    <div class="adjust-label-row">
-                      <span class="adjust-title">Stock Portfolio</span>
-                      <input type="number" id="input-stocks" class="adjust-num-input" value="0" step="1000" />
-                    </div>
-                    <input type="range" id="slider-stocks" min="0" max="1500000" step="5000" value="0" class="slider-adjust theme-slider-cyan" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- View 4: DevOps & Settings view -->
-          <section class="app-view" id="view-settings">
-            <div class="panel theme-cyan">
-              <div class="panel-header" style="margin-bottom: 1.25rem;">
-                <h3 class="panel-title">
-                  <i data-lucide="terminal"></i>
-                  <span>Developer Sync Console</span>
-                </h3>
-                <span class="badge badge-source">DevOps Settings</span>
-              </div>
-
-              <div class="devops-panel-container">
-                <div class="devops-btn-grid">
-                  <button class="devops-btn" id="btn-trigger-backup">
-                    <i data-lucide="database"></i>
-                    <span>Backup Database</span>
-                  </button>
-                  <button class="devops-btn" id="btn-export-config">
-                    <i data-lucide="lock"></i>
-                    <span>Export Config</span>
-                  </button>
-                  <button class="devops-btn" id="btn-github-sync">
-                    <i data-lucide="github"></i>
-                    <span>Push to GitHub</span>
-                  </button>
-                  <button class="devops-btn" id="btn-rerun-onboarding">
-                    <i data-lucide="help-circle"></i>
-                    <span>Rerun Interview</span>
-                  </button>
-                </div>
-
-                <div class="devops-terminal" id="devops-terminal">
-                  <div class="terminal-line terminal-system">[system] Dashboard synchronized. Adaptive layout enabled.</div>
-                  <div class="terminal-line terminal-system">[system] Stocks simulated via internal Web API loaders.</div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- View 5: Money Edit View (Manage and direct-edit all bank, card, and savings balances) -->
-          <section class="app-view" id="view-money-edit">
-            <div class="view-grid-layout">
-              <div class="panel theme-violet grid-span-12">
-                <div class="panel-header">
-                  <h3 class="panel-title">
-                    <i data-lucide="edit-3"></i>
-                    <span>Direct Balance Management</span>
+                    <span>Manual Balance Override</span>
                   </h3>
                   <span class="badge badge-source">Edit Balances</span>
                 </div>
-                
+
                 <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.5rem; margin-bottom: 1.5rem;">
                   Directly adjust your current balances across your accounts below. Changes will immediately update your Net Worth and portfolio calculations.
                 </p>
@@ -618,7 +653,7 @@
                     <h4 style="color: var(--emerald); border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; margin-bottom: 0.25rem;">
                       Cash & Debt
                     </h4>
-                    
+
                     <!-- Bank / Liquid Cash -->
                     <div class="form-group">
                       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
@@ -679,31 +714,70 @@
                   </div>
                 </form>
               </div>
+
+              <!-- Panel 2: Developer Console -->
+              <div class="panel theme-cyan grid-span-12">
+                <div class="panel-header" style="margin-bottom: 1.25rem;">
+                  <h3 class="panel-title">
+                    <i data-lucide="terminal"></i>
+                    <span>Developer Sync Console</span>
+                  </h3>
+                  <span class="badge badge-source">DevOps Settings</span>
+                </div>
+
+                <div class="devops-panel-container">
+                  <div class="devops-btn-grid">
+                    <button class="devops-btn" id="btn-trigger-backup">
+                      <i data-lucide="database"></i>
+                      <span>Backup Database</span>
+                    </button>
+                    <button class="devops-btn" id="btn-export-config">
+                      <i data-lucide="lock"></i>
+                      <span>Export Config</span>
+                    </button>
+                    <button class="devops-btn" id="btn-github-sync">
+                      <i data-lucide="github"></i>
+                      <span>Push to GitHub</span>
+                    </button>
+                    <button class="devops-btn" id="btn-rerun-onboarding">
+                      <i data-lucide="help-circle"></i>
+                      <span>Rerun Interview</span>
+                    </button>
+                  </div>
+
+                  <div class="devops-terminal" id="devops-terminal">
+                    <div class="terminal-line terminal-system">[system] Dashboard synchronized. Adaptive layout enabled.</div>
+                    <div class="terminal-line terminal-system">[system] Stocks simulated via internal Web API loaders.</div>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </section>
+
         </main>
 
         <!-- Floating Bottom Navigation Bar (Mobile only, hidden on Desktop) -->
         <nav class="bottom-nav">
           <button class="nav-btn active" id="nav-home" data-view="view-home">
-            <i data-lucide="home"></i>
+            <i data-lucide="layout-dashboard"></i>
             <span>Home</span>
+          </button>
+          <button class="nav-btn" id="nav-portfolio" data-view="view-portfolio">
+            <i data-lucide="layers"></i>
+            <span>Assets</span>
+          </button>
+          <button class="nav-btn" id="nav-money-edit" data-view="view-money-edit">
+            <i data-lucide="list"></i>
+            <span>Txns</span>
           </button>
           <button class="nav-btn" id="nav-upload" data-view="view-upload">
             <i data-lucide="upload-cloud"></i>
-            <span>Upload</span>
-          </button>
-          <button class="nav-btn" id="nav-portfolio" data-view="view-portfolio">
-            <i data-lucide="pie-chart"></i>
-            <span>Portfolio</span>
-          </button>
-          <button class="nav-btn" id="nav-money-edit" data-view="view-money-edit">
-            <i data-lucide="edit-3"></i>
-            <span>Money Edit</span>
+            <span>Import</span>
           </button>
           <button class="nav-btn" id="nav-settings" data-view="view-settings">
-            <i data-lucide="terminal"></i>
-            <span>DevOps</span>
+            <i data-lucide="settings"></i>
+            <span>Settings</span>
           </button>
         </nav>
       </div>
