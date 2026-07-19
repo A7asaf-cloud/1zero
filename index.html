@@ -343,18 +343,18 @@
                     </span>
                     <span id="extracted-slip-date" style="font-size: 0.7rem; color: var(--text-muted);">June 2026</span>
                   </div>
-                  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; text-align: left;">
+                  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; text-align: left; margin-bottom: 0.6rem;">
                     <div>
                       <div style="font-size: 0.65rem; color: var(--text-muted);">Net Pay</div>
-                      <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-main);" id="extracted-net-pay">₪16,240</div>
+                      <div style="font-size: 0.95rem; font-weight: 700; color: var(--emerald);" id="extracted-net-pay">₪0</div>
                     </div>
                     <div>
-                      <div style="font-size: 0.65rem; color: var(--text-muted);">Tax Deduct</div>
-                      <div style="font-size: 0.95rem; font-weight: 700; color: var(--coral);" id="extracted-tax">₪2,840</div>
+                      <div style="font-size: 0.65rem; color: var(--text-muted);">Keren Hishtalmut</div>
+                      <div style="font-size: 0.95rem; font-weight: 700; color: var(--cyan);" id="extracted-keren">₪0</div>
                     </div>
                     <div>
-                      <div style="font-size: 0.65rem; color: var(--text-muted);">Pension Alloc</div>
-                      <div style="font-size: 0.95rem; font-weight: 700; color: var(--violet);" id="extracted-pension">₪1,950</div>
+                      <div style="font-size: 0.65rem; color: var(--text-muted);">Pension Total</div>
+                      <div style="font-size: 0.95rem; font-weight: 700; color: var(--violet);" id="extracted-pension">₪0</div>
                     </div>
                   </div>
                 </div>
@@ -903,6 +903,63 @@
               <button class="btn-modal-submit" id="ob-btn-finish" style="background: linear-gradient(135deg, var(--emerald) 0%, #047857 100%);">Complete & Launch</button>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pay Slip Allocation Summary Modal -->
+    <div class="modal-overlay" id="payslip-allocation-modal">
+      <div class="modal-box" style="max-width: 360px;">
+        <div class="modal-title">
+          <i data-lucide="trending-up"></i>
+          <span>Monthly Allocation Summary</span>
+        </div>
+        <p class="modal-desc">Your pay slip has been parsed and routed to the correct asset buckets.</p>
+
+        <!-- Bucket A: Liquid Cash -->
+        <div class="alloc-bucket alloc-bucket-emerald">
+          <div class="alloc-bucket-label">
+            <i data-lucide="landmark"></i>
+            <span>Liquid Cash (Bank)</span>
+          </div>
+          <div class="alloc-bucket-value" id="alloc-liquid">+₪0</div>
+        </div>
+
+        <!-- Bucket B: Keren Hishtalmut -->
+        <div class="alloc-bucket alloc-bucket-cyan">
+          <div class="alloc-bucket-label">
+            <i data-lucide="book-open"></i>
+            <span>Keren Hishtalmut</span>
+          </div>
+          <div class="alloc-bucket-rows">
+            <div class="alloc-row"><span>Employee</span><span id="alloc-kh-employee">₪0</span></div>
+            <div class="alloc-row"><span>Employer</span><span id="alloc-kh-employer">₪0</span></div>
+          </div>
+          <div class="alloc-bucket-value" id="alloc-kh-total">+₪0</div>
+        </div>
+
+        <!-- Bucket C: Pension -->
+        <div class="alloc-bucket alloc-bucket-violet">
+          <div class="alloc-bucket-label">
+            <i data-lucide="shield-check"></i>
+            <span>Pension Fund</span>
+          </div>
+          <div class="alloc-bucket-rows">
+            <div class="alloc-row"><span>Employee</span><span id="alloc-pension-employee">₪0</span></div>
+            <div class="alloc-row"><span>Employer Rewards</span><span id="alloc-pension-rewards">₪0</span></div>
+            <div class="alloc-row"><span>Pitzuim</span><span id="alloc-pension-pitzuim">₪0</span></div>
+          </div>
+          <div class="alloc-bucket-value" id="alloc-pension-total">+₪0</div>
+        </div>
+
+        <!-- Net Worth Growth -->
+        <div class="alloc-networth-growth">
+          <span>Net Worth Growth</span>
+          <span id="alloc-networth-growth">+₪0</span>
+        </div>
+
+        <div class="modal-actions">
+          <button id="btn-allocation-close" class="btn-modal-submit" style="width: 100%;">Got it</button>
         </div>
       </div>
     </div>

@@ -920,35 +920,32 @@ function setupUploaderLogic() {
     payScanner.classList.remove('active');
     payProgress.style.width = '0%';
 
-    const mockNet = 16240;
-    const mockTax = 2840;
-    const mockPension = 1950;
-    
-    document.getElementById('extracted-net-pay').textContent = formatCurrency(mockNet);
-    document.getElementById('extracted-tax').textContent = formatCurrency(mockTax);
-    document.getElementById('extracted-pension').textContent = formatCurrency(mockPension);
-    
+    const parsed = {
+      net_salary: 11787.33,
+      keren_hishtalmut: {
+        employee: 325.00,
+        employer: 975.00
+      },
+      pension: {
+        employee: 780.00,
+        employer_rewards: 845.00,
+        employer_pitzuim: 1082.90
+      }
+    };
+
+    const kerenTotal = parsed.keren_hishtalmut.employee + parsed.keren_hishtalmut.employer;
+    const pensionTotal = parsed.pension.employee + parsed.pension.employer_rewards + parsed.pension.employer_pitzuim;
+
+    document.getElementById('extracted-net-pay').textContent = formatCurrency(parsed.net_salary);
+    document.getElementById('extracted-keren').textContent = formatCurrency(kerenTotal);
+    document.getElementById('extracted-pension').textContent = formatCurrency(pensionTotal);
+
     const d = new Date();
-    document.getElementById('extracted-slip-date').textContent = `June ${d.getFullYear()}`;
-
-    state.balances.liquid += mockNet;
-    state.balances.pension += mockPension;
-
-    state.transactions.unshift({
-      date: new Date().toISOString().slice(0,10),
-      description: 'Monthly Salary Pay Slip AI Extraction',
-      category: 'Salary',
-      source: 'Pay Slip',
-      amount: mockNet,
-      type: 'INCOME'
-    });
-
-    updateUIBalances(true);
-    applyFilters();
+    document.getElementById('extracted-slip-date').textContent = `${d.toLocaleString('default', { month: 'long' })} ${d.getFullYear()}`;
 
     payResult.style.display = 'block';
-    terminalWrite(`extracted_payslip_data: Net ${mockNet}, Tax ${mockTax}, Pension ${mockPension}`, 'success');
-    showToast('Pay slip parsed. Local checking and pension balances updated.');
+
+    handleMonthlyPaySlipAllocation(parsed);
   }
 }
 
@@ -1533,6 +1530,73 @@ function setupMoneyEditFlow() {
   });
 }
 
+// ─── Pay Slip Allocation Service ─────────────────────────────────────────────
+
+function handleMonthlyPaySlipAllocation(data) {
+  const kerenTotal = data.keren_hishtalmut.employee + data.keren_hishtalmut.employer;
+  const pensionTotal = data.pension.employee + data.pension.employer_rewards + data.pension.employer_pitzuim;
+  const totalGrowth = data.net_salary + kerenTotal + pensionTotal;
+
+  state.balances.liquid += data.net_salary;
+  state.balances.studyFund += kerenTotal;
+  state.balances.pension += pensionTotal;
+
+  state.transactions.unshift({
+    date: new Date().toISOString().slice(0, 10),
+    description: 'Monthly Salary Pay Slip',
+    category: 'Salary',
+    source: 'Pay Slip',
+    amount: data.net_salary,
+    type: 'INCOME'
+  });
+
+  updateUIBalances(true);
+  applyFilters();
+
+  const newNetWorth = getNetWorth();
+  state.netWorthHistory.push(newNetWorth);
+  if (state.netWorthHistory.length > 10) state.netWorthHistory.shift();
+  if (sparklineChart) sparklineChart.updateSeries([{ data: state.netWorthHistory }]);
+
+  showAllocationModal(data, { kerenTotal, pensionTotal, totalGrowth });
+
+  terminalWrite(
+    `payslip.route(): Net ₪${data.net_salary.toLocaleString()} → Liquid | ` +
+    `₪${kerenTotal.toLocaleString()} → Keren | ₪${pensionTotal.toLocaleString()} → Pension`,
+    'success'
+  );
+}
+
+function showAllocationModal(data, { kerenTotal, pensionTotal, totalGrowth }) {
+  const fmt = (v) => '₪' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  document.getElementById('alloc-liquid').textContent = '+' + fmt(data.net_salary);
+  document.getElementById('alloc-kh-employee').textContent = fmt(data.keren_hishtalmut.employee);
+  document.getElementById('alloc-kh-employer').textContent = fmt(data.keren_hishtalmut.employer);
+  document.getElementById('alloc-kh-total').textContent = '+' + fmt(kerenTotal);
+  document.getElementById('alloc-pension-employee').textContent = fmt(data.pension.employee);
+  document.getElementById('alloc-pension-rewards').textContent = fmt(data.pension.employer_rewards);
+  document.getElementById('alloc-pension-pitzuim').textContent = fmt(data.pension.employer_pitzuim);
+  document.getElementById('alloc-pension-total').textContent = '+' + fmt(pensionTotal);
+  document.getElementById('alloc-networth-growth').textContent = '+' + fmt(totalGrowth);
+
+  document.getElementById('payslip-allocation-modal').classList.add('active');
+  lucide.createIcons();
+}
+
+function setupAllocationModal() {
+  document.getElementById('btn-allocation-close').addEventListener('click', () => {
+    document.getElementById('payslip-allocation-modal').classList.remove('active');
+  });
+  document.getElementById('payslip-allocation-modal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) {
+      e.currentTarget.classList.remove('active');
+    }
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 // Initialise Application
 function initApp() {
   updateUIBalances(false);
@@ -1555,6 +1619,7 @@ function initApp() {
   setupLedgerFilters();
   setupProjectionsSlider();
 
+  setupAllocationModal();
   setupOnboardingFlow();
   if (!localStorage.getItem('onboardingCompleted')) {
     const modal = document.getElementById('onboarding-modal');

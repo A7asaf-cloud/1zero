@@ -1574,3 +1574,66 @@ body {
   from { opacity: 0; transform: translateX(-15px); }
   to { opacity: 1; transform: translateX(0); }
 }
+
+/* ── Pay Slip Allocation Modal ─────────────────────────────────────────────── */
+.alloc-bucket {
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  margin-bottom: 0.55rem;
+  border: 1px solid var(--border-color);
+}
+.alloc-bucket-emerald { background: rgba(16, 185, 129, 0.07); border-color: rgba(16, 185, 129, 0.25); }
+.alloc-bucket-cyan    { background: rgba(6, 182, 212, 0.07);  border-color: rgba(6, 182, 212, 0.25); }
+.alloc-bucket-violet  { background: rgba(139, 92, 246, 0.07); border-color: rgba(139, 92, 246, 0.25); }
+
+.alloc-bucket-label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.4rem;
+}
+.alloc-bucket-label i, .alloc-bucket-label svg { width: 13px; height: 13px; }
+
+.alloc-bucket-rows {
+  margin-bottom: 0.35rem;
+}
+.alloc-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  padding: 0.1rem 0;
+}
+
+.alloc-bucket-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.alloc-bucket-emerald .alloc-bucket-value { color: var(--emerald); }
+.alloc-bucket-cyan .alloc-bucket-value    { color: var(--cyan); }
+.alloc-bucket-violet .alloc-bucket-value  { color: var(--violet); }
+
+.alloc-networth-growth {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.6rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 10px;
+  background: rgba(240, 246, 252, 0.04);
+  border: 1px solid var(--border-color);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.alloc-networth-growth span:last-child {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--emerald);
+}
